@@ -1,10 +1,12 @@
+namespace DirectNet.Net;
+
 /// <summary>
 /// A class containing some constante related to serial communication.
 /// </summary>
 /// <remarks>
 /// These are standard ASCII Control characters and are not unique to the DirectNET protocol.
 /// </remarks>
-static class ControlChar {
+public static class ControlChar {
 
     /// <summary>
     /// Enquiry to start communications
