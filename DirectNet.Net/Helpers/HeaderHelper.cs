@@ -39,10 +39,7 @@ public static class HeaderHelper
         this value with the ASCII table: 4=34 1=31
         0=30 1=31 to get 3431 3031. */
         // Byte 5+6+7+8
-        for (int i = 0; i < 4; i++)
-        {
-            headerBytes[5 + 3 - i] = i < address.Length ? (byte)address[address.Length - 1 - i] : (byte)0x30;
-        }
+        SetAddressField(address, headerBytes);
 
         /* Number of Complete Data Blocks: Anytime you need more than 256 bytes
         of data, you would use this field. If you place a value of 1 into this field,
@@ -93,10 +90,19 @@ public static class HeaderHelper
         red here). Refer to the next slide for a simple
         chart method of calculating the LRC.*/
         // Byte 16 (+18)
-        var lrc = LRCHelper.CalculateLRC(headerBytes, ControlChar.ETB);
-        headerBytes[16] = lrc[1];
+        headerBytes[16] = LRCHelper.CalculateLRC(headerBytes, ControlChar.ETB);
 
         return headerBytes;
+    }
+
+    private static void SetAddressField(string address, byte[] headerBytes)
+    {
+        var hex = address.PadLeft(4, '0');
+
+        headerBytes[5] = HexHelper.PrepareForHeader(hex[0]);
+        headerBytes[6] = HexHelper.PrepareForHeader(hex[1]);
+        headerBytes[7] = HexHelper.PrepareForHeader(hex[2]);
+        headerBytes[8] = HexHelper.PrepareForHeader(hex[3]);
     }
 
     private static void SetCompleteBlockField(int nbAddressRead, byte[] headerBytes)
@@ -116,7 +122,7 @@ public static class HeaderHelper
     {
         if (nbAddressRead < 256)
         {
-            var hex = HexHelper.GetHex(nbAddressRead, 2);
+            var hex = HexHelper.GetDirectNetHex(nbAddressRead, 2);
 
             headerBytes[11] = hex[0];
             headerBytes[12] = hex[1];
@@ -130,7 +136,7 @@ public static class HeaderHelper
 
     private static void SetMasterAddressField(byte[] headerBytes, int masterAddress)
     {
-        var address = HexHelper.GetHex(masterAddress, 2);
+        var address = HexHelper.GetDirectNetHex(masterAddress, 2);
 
         headerBytes[13] = address[0];
         headerBytes[14] = address[1];
@@ -138,7 +144,7 @@ public static class HeaderHelper
 
     private static void SetSlaveAddressField(byte[] headerBytes, int slaveAddress)
     {
-        var address = HexHelper.GetHex(slaveAddress, 2);
+        var address = HexHelper.GetDirectNetHex(slaveAddress, 2);
 
         headerBytes[1] = address[0];
         headerBytes[2] = address[1];

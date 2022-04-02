@@ -6,9 +6,9 @@ namespace DirectNet.Net.Test;
 public class HeaderHelperTest
 {
     [Fact]
-    public void GenerateHeaderTest()
+    public void GenerateHeaderTest_Case1()
     {
-        var header = HeaderHelper.GenerateHeader(OperationType.Read, "v4000", nbAddressRead: 1, slaveAddress: 1, masterAddress: 0);
+        var header = HeaderHelper.GenerateHeader(OperationType.Read, "801", nbAddressRead: 1, slaveAddress: 1, masterAddress: 0);
 
         Assert.Equal(17, header.Length);
 
@@ -26,10 +26,10 @@ public class HeaderHelperTest
         Assert.Equal(0x31, header[4]);
 
         // Assert the starting address field
-        Assert.Equal(0x34, header[5]);
-        Assert.Equal(0x30, header[6]);
+        Assert.Equal(0x30, header[5]);
+        Assert.Equal(0x38, header[6]);
         Assert.Equal(0x30, header[7]);
-        Assert.Equal(0x30, header[8]);
+        Assert.Equal(0x31, header[8]);
 
         // Assert number of complete block field
         Assert.Equal(0x30, header[9]);

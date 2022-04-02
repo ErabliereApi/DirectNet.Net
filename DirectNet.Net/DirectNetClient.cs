@@ -77,7 +77,7 @@ public class DirectNetClient : IDisposable {
     /// <summary>
     /// Read some data begin at the address desired and the number of address to read
     /// </summary>
-    /// <param name="address">For address reference, see: https://cdn.automationdirect.com/static/manuals/dadnet/appxf.pdf</param>
+    /// <param name="address">The address in hex format. For address reference, see: https://cdn.automationdirect.com/static/manuals/dadnet/appxf.pdf </param>
     /// <param name="nbAddressRead"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
