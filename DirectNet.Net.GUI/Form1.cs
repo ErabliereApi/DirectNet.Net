@@ -36,145 +36,145 @@ public partial class Form1 : Form
                             case 0:
                                 Invoke(() =>
                                 {
-                                    label1.Text = value.ToString();
+                                    label_main1.Text = value.ToString();
                                 });
                                 break;
                             case 1:
                                 Invoke(() =>
                                 {
-                                    label2.Text = value.ToString();
+                                    label_main2.Text = value.ToString();
                                 });
                                 break;
                             case 2:
                                 Invoke(() =>
                                 {
-                                    label3.Text = value.ToString();
+                                    label_main3.Text = value.ToString();
                                 });
                                 break;
                             case 3:
                                 Invoke(() =>
                                 {
-                                    label4.Text = value.ToString();
+                                    label_main4.Text = value.ToString();
                                 });
                                 break;
                             case 4:
                                 Invoke(() =>
                                 {
-                                    label5.Text = value.ToString();
+                                    label_main5.Text = value.ToString();
                                 });
                                 break;
                             case 5:
                                 Invoke(() =>
                                 {
-                                    label6.Text = value.ToString();
+                                    label_main6.Text = value.ToString();
                                 });
                                 break;
                             case 6:
                                 Invoke(() =>
                                 {
-                                    label7.Text = value.ToString();
+                                    label_main7.Text = value.ToString();
                                 });
                                 break;
                             case 7:
                                 Invoke(() =>
                                 {
-                                    label8.Text = value.ToString();
+                                    label_main8.Text = value.ToString();
                                 });
                                 break;
                             case 8:
                                 Invoke(() =>
                                 {
-                                    label9.Text = value.ToString();
+                                    label_main9.Text = value.ToString();
                                 });
                                 break;
                             case 9:
                                 Invoke(() =>
                                 {
-                                    label10.Text = value.ToString();
+                                    label_main10.Text = value.ToString();
                                 });
                                 break;
                             case 10:
                                 Invoke(() =>
                                 {
-                                    label11.Text = value.ToString();
+                                    label_main11.Text = value.ToString();
                                 });
                                 break;
                             case 11:
                                 Invoke(() =>
                                 {
-                                    label12.Text = value.ToString();
+                                    label_main12.Text = value.ToString();
                                 });
                                 break;
                             case 12:
                                 Invoke(() =>
                                 {
-                                    label13.Text = value.ToString();
+                                    label_main13.Text = value.ToString();
                                 });
                                 break;
                             case 13:
                                 Invoke(() =>
                                 {
-                                    label14.Text = value.ToString();
+                                    label_main14.Text = value.ToString();
                                 });
                                 break;
                             case 14:
                                 Invoke(() =>
                                 {
-                                    label15.Text = value.ToString();
+                                    label_main15.Text = value.ToString();
                                 });
                                 break;
                             case 15:
                                 Invoke(() =>
                                 {
-                                    label16.Text = value.ToString();
+                                    label_main16.Text = value.ToString();
                                 });
                                 break;
                             case 16:
                                 Invoke(() =>
                                 {
-                                    label17.Text = value.ToString();
+                                    label_main17.Text = value.ToString();
                                 });
                                 break;
                             case 17:
                                 Invoke(() =>
                                 {
-                                    label18.Text = value.ToString();
+                                    label_main18.Text = value.ToString();
                                 });
                                 break;
                             case 18:
                                 Invoke(() =>
                                 {
-                                    label19.Text = value.ToString();
+                                    label_main19.Text = value.ToString();
                                 });
                                 break;
                             case 19:
                                 Invoke(() =>
                                 {
-                                    label20.Text = value.ToString();
+                                    label_main20.Text = value.ToString();
                                 });
                                 break;
                             case 20:
                                 Invoke(() =>
                                 {
-                                    label21.Text = value.ToString();
+                                    label_main21.Text = value.ToString();
                                 });
                                 break;
                             case 21:
                                 Invoke(() =>
                                 {
-                                    label22.Text = value.ToString();
+                                    label_main22.Text = value.ToString();
                                 });
                                 break;
                             case 22:
                                 Invoke(() =>
                                 {
-                                    label23.Text = value.ToString();
+                                    label_main23.Text = value.ToString();
                                 });
                                 break;
                             case 23:
                                 Invoke(() =>
                                 {
-                                    label24.Text = value.ToString();
+                                    label_main24.Text = value.ToString();
                                 });
                                 break;
                             default:

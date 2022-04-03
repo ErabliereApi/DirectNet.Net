@@ -5,7 +5,8 @@ namespace DirectNet.Net.Extensions;
 
 public static class SerialClientExtension
 {
-    public static async Task<byte[]> ReadAsync(this SerialPort serialPort, int nbByteToRead, Func<int, byte[], bool>? additionnalPredicat = null, ILogger? logger = null)
+    public static async Task<byte[]> ReadAsync(this SerialPort serialPort, 
+        int nbByteToRead, Func<int, byte[], bool>? additionnalPredicat = null, ILogger? logger = null)
     {
         logger?.LogDebug("Begin ReadAsync. NbBytesRead: {nbByteToRead}", nbByteToRead);
         var watch = logger?.IsEnabled(LogLevel.Debug) == true ? Stopwatch.StartNew() : null;
@@ -29,7 +30,8 @@ public static class SerialClientExtension
             throw new InvalidOperationException($"Expected to read {nbByteToRead} bytes but got {nbBytesRead}");
         }
 
-        logger?.LogDebug("End ReadAsync. NbBytesRead: {nbByteToRead}. Duration: {ElapsedMilliseconds}ms", nbByteToRead, watch?.ElapsedMilliseconds);
+        logger?.LogDebug(
+            "End ReadAsync. NbBytesRead: {nbByteToRead}. Duration: {ElapsedMilliseconds}ms", nbByteToRead, watch?.ElapsedMilliseconds);
 
         return bytes;
     }

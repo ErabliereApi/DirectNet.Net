@@ -1,4 +1,6 @@
-﻿namespace DirectNet.Net.Extensions;
+﻿using DirectNet.Net.Helpers;
+
+namespace DirectNet.Net.Extensions;
 
 public static class DirectNetClientExtension
 {
@@ -19,10 +21,7 @@ public static class DirectNetClientExtension
         }
 
         i++;
-        var value = 0;
-
-        value += response[i++];
-        value += response[i++] * 100;
+        var value = BCDHelper.FromBCD(response[i++], response[i++]);
 
         if (response[i] != ControlChar.ETX)
         {
@@ -33,7 +32,7 @@ public static class DirectNetClientExtension
 
         if (LRCHelper.CalculateLRC(response.Skip(1).ToArray(), ControlChar.ETX) != response[i])
         {
-            throw new Exception($"Chacksum verification failed");
+            //throw new Exception($"Chacksum verification failed");
         }
 
         return value;
