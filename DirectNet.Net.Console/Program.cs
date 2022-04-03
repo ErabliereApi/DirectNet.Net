@@ -23,7 +23,7 @@ try
     {
         var value = await directnet.ReadVMemoryLocationAsync((begin + a).ToString("X"));
 
-        Console.WriteLine($"Memory Address: {802 + a} Main {a + 1,2}: {value}");
+        Console.WriteLine($"Memory Address: {801 + a} Main {a + 1,2}: {value}");
     }
 }
 catch (Exception ex)

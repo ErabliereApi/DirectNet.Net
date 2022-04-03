@@ -2,6 +2,8 @@
 
 public interface IDirectNetClient
 {
+    bool IsOpen { get; }
+
     void Open();
     void Close();
     Task EnquiryAsync();

@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectNet.Net.Test", "Direc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectNet.Net.Console", "DirectNet.Net.Console\DirectNet.Net.Console.csproj", "{A57579A2-1066-4C2F-97B8-5B2BACB281CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectNet.Net.GUI", "DirectNet.Net.GUI\DirectNet.Net.GUI.csproj", "{5742EE27-56EB-4830-8B4A-F32F936283A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A57579A2-1066-4C2F-97B8-5B2BACB281CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A57579A2-1066-4C2F-97B8-5B2BACB281CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A57579A2-1066-4C2F-97B8-5B2BACB281CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

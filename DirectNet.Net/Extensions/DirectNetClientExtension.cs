@@ -2,7 +2,7 @@
 
 public static class DirectNetClientExtension
 {
-    public static async Task<int> ReadVMemoryLocationAsync(this DirectNetClient directnet, string vMemoryAddressInHex)
+    public static async Task<int> ReadVMemoryLocationAsync(this IDirectNetClient directnet, string vMemoryAddressInHex)
     {
         var response = await directnet.ReadAsync(vMemoryAddressInHex, 2);
 

@@ -19,9 +19,9 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
     /// Create a DirectNetClient
     /// </summary>
     /// <param name="portName">Port name, for com port 4, enter COM4</param>
-    /// <param name="timeout">The timout of read and write operation in seconds</param>
+    /// <param name="timeout">The timout of read and write operation in milisenconds</param>
     public DirectNetClient(
-        string portName, int timeout, Handshake handshake = Handshake.None, 
+        string portName, int timeout = 1000, Handshake handshake = Handshake.None, 
         ILogger<DirectNetClient>? logger = null) 
     {
         _serialPort = new SerialPort(portName, 9600, Parity.Odd, 8, StopBits.One)
@@ -32,6 +32,8 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
         };
         _logger = logger;
     }
+
+    public bool IsOpen => _serialPort.IsOpen;
 
     public void Open() {
         _logger?.LogInformation("Opening serial port {portName}", _serialPort.PortName);
