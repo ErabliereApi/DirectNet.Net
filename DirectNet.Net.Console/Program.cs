@@ -34,4 +34,3 @@ finally
 {
     directnet.Close();
 }
-
