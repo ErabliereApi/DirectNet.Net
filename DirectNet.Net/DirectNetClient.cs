@@ -11,7 +11,7 @@ namespace DirectNet.Net;
 /// <remarks>
 /// Ref: https://support.automationdirect.com/docs/an-misc-029.pdf
 /// </remarks>
-public class DirectNetClient : IDisposable {
+public class DirectNetClient : IDirectNetClient, IDisposable {
     private readonly SerialPort _serialPort;
     private readonly ILogger<DirectNetClient>? _logger;
 
@@ -68,7 +68,8 @@ public class DirectNetClient : IDisposable {
         _logger?.LogInformation("End Enquiry");
     }
 
-    public void Close() {
+    public void Close() 
+    {
         _logger?.LogInformation("Closing serial port", _serialPort.PortName);
         _serialPort.Close();
         _logger?.LogInformation("Serial port {portName} now close", _serialPort.PortName);
