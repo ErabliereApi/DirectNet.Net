@@ -8,32 +8,7 @@ public static class DirectNetClientExtension
     {
         var response = await directnet.ReadAsync(vMemoryAddressInHex, 2);
 
-        var i = 0;
-
-        if (response[i] != ControlChar.ACK)
-        {
-            throw new Exception($"Ack invalid. Got {response[i]}");
-        }
-
-        if (response[++i] != ControlChar.STX)
-        {
-            throw new Exception($"Excpected start of data block but got : {response[i]}");
-        }
-
-        i++;
-        var value = BCDHelper.FromBCD(response[i++], response[i++]);
-
-        if (response[i] != ControlChar.ETX)
-        {
-            throw new Exception($"Excepted end of block but got : {response[i]}");
-        }
-
-        i++;
-
-        if (LRCHelper.CalculateLRC(response.Skip(1).ToArray(), ControlChar.ETX) != response[i])
-        {
-            //throw new Exception($"Chacksum verification failed");
-        }
+        var value = BCDHelper.FromBCD(response[0], response[1]);
 
         return value;
     }

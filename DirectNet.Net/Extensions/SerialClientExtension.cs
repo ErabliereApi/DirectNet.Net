@@ -35,4 +35,14 @@ public static class SerialClientExtension
 
         return bytes;
     }
+
+    public static void Write(this SerialPort serialPort, byte[] bytes)
+    {
+        serialPort.Write(bytes, 0, bytes.Length);
+    }
+
+    public static void Write(this SerialPort serialPort, byte c)
+    {
+        serialPort.Write(new byte[] { c });
+    }
 }

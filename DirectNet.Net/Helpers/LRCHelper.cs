@@ -2,27 +2,15 @@
 
 public static class LRCHelper
 {
-    public static byte CalculateLRC(byte[] headerBytes, byte endOfBlock)
+    public static byte CalculateLRC(byte[] bytes, byte endOfBlock)
     {
-        int[] totalOfOnes = new int[8];
+        var v = 0;
 
-        for (int i = 1; i < headerBytes.Length && headerBytes[i] != endOfBlock; i++)
+        for (int i = 1; bytes[i] != endOfBlock && i < bytes.Length; i++)
         {
-            var bytes = headerBytes[i];
-
-            for (int b = 0; b < 8; b++)
-            {
-                totalOfOnes[b] += (bytes >> b) & 1;
-            }
+            v ^= bytes[i];
         }
 
-        int half1 = 0x00;
-
-        for (int i = 0; i < 8; i++)
-        {
-            half1 += (totalOfOnes[i] & 1) << i;
-        }
-
-        return (byte)half1;
+        return (byte) v;
     }
 }
