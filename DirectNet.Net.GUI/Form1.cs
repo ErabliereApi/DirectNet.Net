@@ -1,5 +1,6 @@
 using DirectNet.Net.Extensions;
 using DirectNet.Net.Helpers;
+using System.Drawing;
 
 namespace DirectNet.Net.GUI;
 
@@ -23,13 +24,11 @@ public partial class Form1 : Form
                         _client.Open();
                     }
 
-                    var begin = OctalHelper.FromOctal("4000");
+                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24);
 
-                    begin += 1; // Add the offset
-
-                    for (int a = 0; a < 24; a++)
+                    for (int a = 0; a < values.Length; a++)
                     {
-                        var value = await _client.ReadVMemoryLocationAsync((begin + a).ToString("X"));
+                        var value = values[a] / 10.0;
 
                         switch (a)
                         {

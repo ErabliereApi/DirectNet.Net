@@ -4,25 +4,21 @@ public static class HexHelper
 {
     /// <summary>
     /// Convert an integer to hex values ready to send in a DirectNet communication. 
-    /// GetHex(10) => [0x31, 0x30]
+    /// GetDirectNetHex(01) => [0x30, 0x31]
+    /// GetDirectNetHex(10) => [0x30, 0x3A]
     /// </summary>
     public static byte[] GetDirectNetHex(int number, int arrayReturnMinSize = 1)
     {
-        var str = number.ToString().PadLeft(arrayReturnMinSize, '0');
+        var str = number.ToString("X").PadLeft(arrayReturnMinSize, '0');
 
         var bytes = new byte[str.Length];
 
         for (int i = bytes.Length - 1; i >= 0; i--)
         {
-            bytes[i] = (byte)(0x30 + ParseHex(str[i]));
+            bytes[i] = (byte)str[i];
         }
 
         return bytes;
-    }
-
-    public static byte ParseHex(char hex)
-    {
-        return byte.Parse(hex.ToString(), System.Globalization.NumberStyles.HexNumber);
     }
 
     public static byte PrepareForHeader(int value)

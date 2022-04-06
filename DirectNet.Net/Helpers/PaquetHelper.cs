@@ -8,9 +8,15 @@ public static class PaquetHelper
 
         paquet[0] = ControlChar.STX;
         
-        for (int i = 0; i < data.Length; i++)
+        for (int i = 0; i < data.Length; i += 2)
         {
-            paquet[i + 1] = data[i];
+            paquet[i + 1] = data[i + 1];
+            paquet[i + 2] = data[i];
+
+            if (data.Length == i + 2)
+            {
+                paquet[i + 3] = data[i + 1];
+            }
         }
 
         paquet[^2] = ControlChar.ETX;

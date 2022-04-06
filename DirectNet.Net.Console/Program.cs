@@ -1,8 +1,6 @@
 ﻿using DirectNet.Net;
 using DirectNet.Net.Extensions;
-using DirectNet.Net.Helpers;
 using Microsoft.Extensions.Logging;
-using System.Text;
 
 var logger = LoggerFactory.Create(builder =>
 {
@@ -16,36 +14,22 @@ try
 {
     directnet.Open();
 
-    var begin = OctalHelper.FromOctal("4000");
+    var values = await directnet.ReadVMemoryLocationsAsync("V4000", 24);
 
-    begin += 1; // Add the offset
-
-    var csv = new StringBuilder();
-
-    csv.Append("Expected value");
-    csv.Append(';');
-    csv.Append("byte 1");
-    csv.Append(';');
-    csv.Append("byte 2");
-    csv.Append(';');
-    csv.Append("After conversion");
-
-    for (int a = 0; a < 299; a++)
+    for (int i = 0; i < values.Length; i++)
     {
-        var response = await directnet.ReadAsync((begin + a).ToString("X"), 2);
-
-        var value = BCDHelper.FromBCD(response[0], response[1]);
-
-        csv.Append(a);
-        csv.Append(';');
-        csv.Append(response[0]);
-        csv.Append(';');
-        csv.Append(response[1]);
-        csv.Append(';');
-        csv.AppendLine(value.ToString());
+        Console.WriteLine($"{i} {values[i]}");
     }
 
-    File.WriteAllText("TestCase.csv", csv.ToString());
+    // This will write value 255 in memory location V4000 and 2 in memory location V4001
+    await directnet.WriteAsync("V4000", new byte[] { 0x00, 0xFF, 0x00, 0x02 });
+
+    values = await directnet.ReadVMemoryLocationsAsync("V4000", 24);
+
+    for (int i = 0; i < values.Length; i++)
+    {
+        Console.WriteLine($"{i} {values[i]}");
+    }
 }
 catch (Exception ex)
 {

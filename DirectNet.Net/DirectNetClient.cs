@@ -22,9 +22,10 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
     /// <param name="timeout">The timout of read and write operation in milisenconds</param>
     public DirectNetClient(
         string portName, int timeout = 1000, Handshake handshake = Handshake.None, 
+        int baudRate = 9600, Parity parity = Parity.Odd, int dataBits = 8, StopBits stopBits = StopBits.One,
         ILogger<DirectNetClient>? logger = null) 
     {
-        _serialPort = new SerialPort(portName, 9600, Parity.Odd, 8, StopBits.One)
+        _serialPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits)
         {
             ReadTimeout = timeout,
             WriteTimeout = timeout,
@@ -65,11 +66,11 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
     /// <param name="nbAddressRead"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public async Task<byte[]> ReadAsync(string address, int nbAddressRead = 1)
+    public async Task<byte[]> ReadAsync(string address, int nbAddressRead = 1, int slaveAddress = 1, int masterAddress = 0)
     {
         _logger?.LogDebug("Begin ReadAsync on address {address}", address);
 
-        await EnquiryAsync();
+        await EnquiryAsync(slaveAddress);
 
         var header = HeaderHelper.GenerateHeader(OperationType.Read, address, nbAddressRead);
 
@@ -83,14 +84,16 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
 
         await EndTransactionAsync(response);
 
+        _logger?.LogDebug("End ReadAsync on address {address}", address);
+
         return response;
     }
 
-    public async Task WriteAsync(string address, byte[] data)
+    public async Task WriteAsync(string address, byte[] data, int slaveAddress = 1, int masterAddress = 0)
     {
         _logger?.LogDebug("Begin write on address {address}", address);
 
-        await EnquiryAsync();
+        await EnquiryAsync(slaveAddress);
 
         var header = HeaderHelper.GenerateHeader(OperationType.Write, address, data.Length);
 
@@ -109,25 +112,25 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
         _logger?.LogDebug("End write on address {address}", address);
     }
 
-    public async Task EnquiryAsync()
+    public async Task EnquiryAsync(int slaveAddress)
     {
         _logger?.LogInformation("Begin Enquiry");
 
-        _serialPort.Write(AckMessage);
+        var ackMessage = new byte[3] { 0x4E, (byte)(0x20 + slaveAddress), 0x05 };
+
+        _serialPort.Write(ackMessage);
 
         var response = await _serialPort.ReadAsync(3, logger: _logger);
 
-        if (!(response[0] == AckMessage[0] &&
-            response[1] == AckMessage[1] &&
-            response[2] == AckMessage[2] + 1))
+        if (!(response[0] == ackMessage[0] &&
+            response[1] == ackMessage[1] &&
+            response[2] == ackMessage[2] + 1))
         {
             throw new InvalidOperationException("Enquiry failed");
         }
 
         _logger?.LogInformation("End Enquiry");
     }
-
-    private static readonly byte[] AckMessage = new byte[3] { 0x4E, 0x21, 0x05 };
 
     private async Task<byte[]> ParseData(int size)
     {
@@ -142,16 +145,17 @@ public class DirectNetClient : IDirectNetClient, IDisposable {
     private async Task ReadAckAsync()
     {
         var ack = await _serialPort.ReadAsync(1, logger: _logger);
+        if (ack[0] == ControlChar.NAK)
+        {
+            throw new Exception("Error reading acknowledgement. Recieved NAK. The data command sent to the PLC was formatted incorrectly or the LRC was incorrect.");
+        }
         if (ack[0] != ControlChar.ACK)
         {
-            throw new Exception($"Recieved 0x{ack[0]:X}. Expected {ControlChar.ACK.ToString("X")}");
+            throw new Exception($"Recieved 0x{ack[0]:X}. Expected {ControlChar.ACK:X}");
         }
     }
 
-    private void WriteAck()
-    {
-        _serialPort.Write(ControlChar.ACK);
-    }
+    private void WriteAck() => _serialPort.Write(ControlChar.ACK);
 
     private async Task EndTransactionAsync(byte[] response)
     {

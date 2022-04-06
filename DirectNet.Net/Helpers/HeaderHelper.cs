@@ -1,7 +1,14 @@
-﻿namespace DirectNet.Net.Helpers;
+﻿using System.Text;
+
+namespace DirectNet.Net.Helpers;
 
 public static class HeaderHelper
 {
+    public static Dictionary<string, byte> MemoryTypes = new Dictionary<string, byte>()
+    {
+        { "V", 0x31 }
+    };
+
     public static byte[] GenerateHeader(OperationType operationType, string address, int nbAddressRead = 1, int slaveAddress = 1, int masterAddress = 0)
     {
         var headerBytes = new byte[17];
@@ -27,7 +34,7 @@ public static class HeaderHelper
 
         // Data Type Field: Refer to Appendixes D-F for the appropriate PLC mapping. Example: DL205 V-memory is 31.
         // Byte 4
-        headerBytes[4] = 0x31;
+        headerBytes[4] = GetAddressType(address);
 
         /* Starting Address Fields: Refer to Appendixes
         D-F for the appropriate 4 digit PLC Reference
@@ -95,9 +102,41 @@ public static class HeaderHelper
         return headerBytes;
     }
 
+    private static byte GetAddressType(string address)
+    {
+        var sb = new StringBuilder();
+
+        for (int i = 0; i < address.Length; i++)
+        {
+            if (char.IsLetter(address[i]))
+            {
+                sb.Append(char.ToUpper(address[i]));
+            }
+            else if (sb.Length > 0)
+            {
+                break;
+            }
+        }
+
+        return MemoryTypes[sb.ToString()];
+    }
+
     private static void SetAddressField(string address, byte[] headerBytes)
     {
-        var hex = address.PadLeft(4, '0');
+        var addressNumber = new StringBuilder();
+
+        for (int i = 0; i < address.Length; i++)
+        {
+            if (char.IsDigit(address[i]))
+            {
+                addressNumber.Append(address[i]);
+            }
+        }
+
+        const int offset = 1;
+
+        var hexAddr = (OctalHelper.FromOctal(addressNumber.ToString()) + offset).ToString("X");
+        var hex = hexAddr.ToString().PadLeft(4, '0');
 
         headerBytes[5] = HexHelper.PrepareForHeader(hex[0]);
         headerBytes[6] = HexHelper.PrepareForHeader(hex[1]);
@@ -109,7 +148,17 @@ public static class HeaderHelper
     {
         if (nbAddressRead >= 256)
         {
-            throw new NotImplementedException("Sorry you cannot read more that 255 block for now");
+            var nbBlock = nbAddressRead / 256;
+
+            if (nbAddressRead != nbBlock * 256)
+            {
+                nbBlock++;
+            }
+
+            var hex = HexHelper.GetDirectNetHex(nbBlock, 2);
+
+            headerBytes[9] = hex[0];
+            headerBytes[10] = hex[1];
         }
         else
         {
