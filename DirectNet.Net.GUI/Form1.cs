@@ -1,6 +1,6 @@
 using DirectNet.Net.Extensions;
-using DirectNet.Net.Helpers;
-using System.Drawing;
+using System.Diagnostics;
+using System.IO.Ports;
 
 namespace DirectNet.Net.GUI;
 
@@ -12,9 +12,17 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
-        _client = new DirectNetClient("COM4");
+        var ports = SerialPort.GetPortNames();
+        toolStripComboBox1.Items.AddRange(ports);
+        if (ports.Length > 0)
+        {
+            toolStripComboBox1.SelectedIndex = 0;
+        }
+        _client = new DirectNetClient(ports.FirstOrDefault() ?? "COM4");
         _task = Task.Run(async () =>
         {
+            var chrono = new Stopwatch();
+
             while (true)
             {
                 try
@@ -24,7 +32,15 @@ public partial class Form1 : Form
                         _client.Open();
                     }
 
+                    chrono.Start();
+
                     var values = await _client.ReadVMemoryLocationsAsync("V4000", 24);
+
+                    chrono.Stop();
+
+                    toolStripStatusLabel1.Text = $"Scan time: {chrono.ElapsedMilliseconds}ms";
+
+                    chrono.Reset();
 
                     for (int a = 0; a < values.Length; a++)
                     {
@@ -192,6 +208,11 @@ public partial class Form1 : Form
     }
 
     private void groupBox1_Enter(object sender, EventArgs e)
+    {
+
+    }
+
+    private void toolStripStatusLabel1_Click(object sender, EventArgs e)
     {
 
     }
