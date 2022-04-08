@@ -74,7 +74,7 @@ public partial class Form1 : Form
 
                     chrono.Start();
 
-                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24);
+                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24, token: token);
 
                     chrono.Stop();
 
