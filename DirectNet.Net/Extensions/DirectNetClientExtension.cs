@@ -26,9 +26,9 @@ public static class DirectNetClientExtension
     /// <param name="address">The VMemory address with the prefix V. Example: V4000</param>
     /// <param name="nbVMemoryAddress">The number of VMemory location to read</param>
     /// <returns></returns>
-    public static async Task<int[]> ReadVMemoryLocationsAsync(this IDirectNetClient directnet, string address, int nbVMemoryAddress)
+    public static async Task<int[]> ReadVMemoryLocationsAsync(this IDirectNetClient directnet, string address, int nbVMemoryAddress, CancellationToken token = default)
     {
-        var bytes = await directnet.ReadAsync(address, nbVMemoryAddress * 2);
+        var bytes = await directnet.ReadAsync(address, nbVMemoryAddress * 2, token: token);
 
         var values = new int[nbVMemoryAddress];
 

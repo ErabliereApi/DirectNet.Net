@@ -6,7 +6,8 @@ namespace DirectNet.Net.Extensions;
 public static class SerialClientExtension
 {
     public static async Task<byte[]> ReadAsync(this SerialPort serialPort, 
-        int nbByteToRead, Func<int, byte[], bool>? additionnalPredicat = null, ILogger? logger = null)
+        int nbByteToRead, Func<int, byte[], bool>? additionnalPredicat = null, ILogger? logger = null,
+        CancellationToken token = default)
     {
         logger?.LogDebug("Begin ReadAsync. NbBytesRead: {nbByteToRead}", nbByteToRead);
         var watch = logger?.IsEnabled(LogLevel.Debug) == true ? Stopwatch.StartNew() : null;
@@ -15,14 +16,18 @@ public static class SerialClientExtension
 
         var nbBytesRead = 0;
 
-        using var tokenSource = new CancellationTokenSource();
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
 
         tokenSource.CancelAfter(serialPort.ReadTimeout);
 
-        while (nbBytesRead < nbByteToRead && (additionnalPredicat == null || additionnalPredicat.Invoke(nbBytesRead, bytes)))
+        var token2 = tokenSource.Token;
+
+        while (!token2.IsCancellationRequested &&
+               nbBytesRead < nbByteToRead && 
+               (additionnalPredicat == null || additionnalPredicat.Invoke(nbBytesRead, bytes)))
         {
             nbBytesRead += 
-                await serialPort.BaseStream.ReadAsync(bytes.AsMemory(nbBytesRead, nbByteToRead - nbBytesRead), tokenSource.Token);
+                await serialPort.BaseStream.ReadAsync(bytes.AsMemory(nbBytesRead, nbByteToRead - nbBytesRead), token2);
         }
 
         if (nbBytesRead != nbByteToRead)
