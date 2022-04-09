@@ -1,17 +1,15 @@
 using DirectNet.Net.Extensions;
+using DirectNet.Net.Static;
 using ErabliereAPI.Proxy;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.IO.Ports;
-using System.Text.Json;
 
 namespace DirectNet.Net.GUI;
 
 public partial class Form1 : Form
 {
-    private readonly IMemoryCache _memoryCache;
     private readonly IServiceProvider _provider;
     private IDirectNetClient? _client;
     private CancellationTokenSource? _cst;
@@ -19,7 +17,6 @@ public partial class Form1 : Form
 
     public Form1(IServiceProvider provider)
     {
-        _memoryCache = provider.GetRequiredService<IMemoryCache>();
         _provider = provider;
         InitializeComponent();
         var ports = SerialPort.GetPortNames();
@@ -107,7 +104,7 @@ public partial class Form1 : Form
 
                     chrono.Start();
 
-                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24, token: token);
+                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24, format: FormatType.BCD, token: token);
 
                     chrono.Stop();
 
@@ -123,10 +120,13 @@ public partial class Form1 : Form
                     try
                     {
                         await UpdateErabliereAPI(values, token);
-                        Invoke(() =>
+                        if (toolStripStatusLabel5.Text != "ErabliereAPI: Disabled")
                         {
-                            toolStripStatusLabel5.Text = $"ErabliereAPI: Last send {_lastSend}";
-                        });
+                            Invoke(() =>
+                            {
+                                toolStripStatusLabel5.Text = $"ErabliereAPI: Last send {_lastSend}";
+                            });
+                        }
                     }
                     catch (Exception ez)
                     {
