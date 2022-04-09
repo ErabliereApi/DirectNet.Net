@@ -53,6 +53,9 @@ public partial class Form1 : Form
         if (_client != null)
         {
             _client.Close();
+            toolStripStatusLabel2.Text = $"State: Close";
+            toolStripStatusLabel3.Text = "";
+            toolStripStatusLabel4.Text = $"Enquery: n/a";
             _client.Dispose();
         }
 
@@ -70,6 +73,18 @@ public partial class Form1 : Form
                     if (!_client.IsOpen)
                     {
                         _client.Open();
+                        toolStripStatusLabel2.Text = $"State: Open";
+                        toolStripStatusLabel3.Text = $"PortName: {_client.PortName}";
+                        try
+                        {
+                            await _client.EnquiryAsync(1, token);
+                            toolStripStatusLabel4.Text = $"Enquery: Succeded";
+                        }
+                        catch (Exception e)
+                        {
+                            Console.Error.WriteLine(e);
+                            toolStripStatusLabel4.Text = $"Enquery: Failed";
+                        }
                     }
 
                     chrono.Start();
@@ -273,6 +288,11 @@ public partial class Form1 : Form
     }
 
     private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+    {
+
+    }
+
+    private void toolStripStatusLabel2_Click(object sender, EventArgs e)
     {
 
     }

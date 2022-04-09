@@ -3,6 +3,7 @@
 public interface IDirectNetClient : IDisposable
 {
     bool IsOpen { get; }
+    string PortName { get; }
 
     void Open();
     void Close();

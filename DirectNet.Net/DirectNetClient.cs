@@ -11,7 +11,8 @@ namespace DirectNet.Net;
 /// <remarks>
 /// Ref: https://support.automationdirect.com/docs/an-misc-029.pdf
 /// </remarks>
-public class DirectNetClient : IDirectNetClient {
+public class DirectNetClient : IDirectNetClient
+{
     private readonly SerialPort _serialPort;
     private readonly ILogger<DirectNetClient>? _logger;
 
@@ -35,6 +36,8 @@ public class DirectNetClient : IDirectNetClient {
     }
 
     public bool IsOpen => _serialPort.IsOpen;
+
+    public string PortName => _serialPort.PortName;
 
     public void Open() 
     {
