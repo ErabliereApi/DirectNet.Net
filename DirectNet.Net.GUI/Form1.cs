@@ -1,17 +1,26 @@
 using DirectNet.Net.Extensions;
+using ErabliereAPI.Proxy;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.IO.Ports;
+using System.Text.Json;
 
 namespace DirectNet.Net.GUI;
 
 public partial class Form1 : Form
 {
+    private readonly IMemoryCache _memoryCache;
+    private readonly IServiceProvider _provider;
     private IDirectNetClient? _client;
     private CancellationTokenSource? _cst;
     private Task? _task;
 
-    public Form1()
+    public Form1(IServiceProvider provider)
     {
+        _memoryCache = provider.GetRequiredService<IMemoryCache>();
+        _provider = provider;
         InitializeComponent();
         var ports = SerialPort.GetPortNames();
         toolStripComboBox1.Items.AddRange(ports);
@@ -73,17 +82,26 @@ public partial class Form1 : Form
                     if (!_client.IsOpen)
                     {
                         _client.Open();
-                        toolStripStatusLabel2.Text = $"State: Open";
-                        toolStripStatusLabel3.Text = $"PortName: {_client.PortName}";
+                        Invoke(() =>
+                        {
+                            toolStripStatusLabel2.Text = $"State: Open";
+                            toolStripStatusLabel3.Text = $"PortName: {_client.PortName}";
+                        });
                         try
                         {
                             await _client.EnquiryAsync(1, token);
-                            toolStripStatusLabel4.Text = $"Enquery: Succeded";
+                            Invoke(() =>
+                            {
+                                toolStripStatusLabel4.Text = $"Enquery: Succeded";
+                            });
                         }
                         catch (Exception e)
                         {
                             Console.Error.WriteLine(e);
-                            toolStripStatusLabel4.Text = $"Enquery: Failed";
+                            Invoke(() =>
+                            {
+                                toolStripStatusLabel4.Text = $"Enquery: Failed";
+                            });
                         }
                     }
 
@@ -93,11 +111,31 @@ public partial class Form1 : Form
 
                     chrono.Stop();
 
-                    toolStripStatusLabel1.Text = $"Scan time: {chrono.ElapsedMilliseconds}ms";
+                    Invoke(() =>
+                    {
+                        toolStripStatusLabel1.Text = $"Scan time: {chrono.ElapsedMilliseconds}ms";
+                    });
 
                     chrono.Reset();
 
                     UpdateUI(values);
+
+                    try
+                    {
+                        await UpdateErabliereAPI(values, token);
+                        Invoke(() =>
+                        {
+                            toolStripStatusLabel5.Text = $"ErabliereAPI: Last send {_lastSend}";
+                        });
+                    }
+                    catch (Exception ez)
+                    {
+                        Console.Error.WriteLine(ez);
+                        Invoke(() =>
+                        {
+                            toolStripStatusLabel5.Text = $"ErabliereAPI: {ez.Message.ReplaceLineEndings(" ")}";
+                        });
+                    }
                 }
                 catch (Exception e)
                 {
@@ -110,6 +148,47 @@ public partial class Form1 : Form
                 }
             }
         }, token);
+    }
+
+    public DateTime _lastSend;
+
+    private async ValueTask UpdateErabliereAPI(int[] values, CancellationToken token)
+    {
+        var options = _provider.GetRequiredService<IOptions<ErabliereApiOptionsWithSensors>>().Value;
+
+        if (options.SendIntervalInMinutes <= 0)
+        {
+            Invoke(() =>
+            {
+                toolStripStatusLabel5.Text = "ErabliereAPI: Disabled";
+            });
+        }
+        else if (DateTime.Now - _lastSend > TimeSpan.FromMinutes(options.SendIntervalInMinutes))
+        {
+            Invoke(() =>
+            {
+                toolStripStatusLabel5.Text = $"ErabliereAPI: Sending datas {DateTime.Now}";
+            });
+
+            using var scope = _provider.CreateScope();
+
+            var httpClientfactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
+
+            var httpClient = httpClientfactory.CreateClient("ErabliereAPI");
+
+            var erabliereApi = new ErabliereApiProxy(options.BaseUrl, httpClient);
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                await erabliereApi.DonneesCapteurPOSTAsync(options.CapteursIds[i], new PostDonneeCapteur
+                {
+                    IdCapteur = options.CapteursIds[i],
+                    V = values[i]
+                }, token);
+            }
+
+            _lastSend = DateTime.Now;
+        }
     }
 
     private void ToolStripComboBox1_SelectedIndexChanged(object? sender, EventArgs e)
