@@ -1,6 +1,8 @@
 using ErabliereAPI.Proxy;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Serilog;
 using System.Text.Json;
 
 namespace DirectNet.Net.GUI;
@@ -15,9 +17,17 @@ internal static class Program
     [STAThread]
     static void Main()
     {
+        var logger = new LoggerConfiguration()
+            .WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+            .CreateLogger();
+
         IServiceCollection serviceCollection = new ServiceCollection()
             .AddMemoryCache()
-            .AddTransient<AzureADClientCredentialsHandler>();
+            .AddTransient<AzureADClientCredentialsHandler>()
+            .AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddSerilog(logger);
+            });
         serviceCollection.AddOptions<ErabliereApiOptionsWithSensors>().Configure(o =>
         {
             if (_options == null)

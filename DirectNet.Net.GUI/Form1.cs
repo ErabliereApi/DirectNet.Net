@@ -2,6 +2,7 @@ using DirectNet.Net.Extensions;
 using DirectNet.Net.Static;
 using ErabliereAPI.Proxy;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.IO.Ports;
@@ -11,6 +12,7 @@ namespace DirectNet.Net.GUI;
 public partial class Form1 : Form
 {
     private readonly IServiceProvider _provider;
+    private readonly ILogger<Form1> _logger;
     private IDirectNetClient? _client;
     private CancellationTokenSource? _cst;
     private Task? _task;
@@ -18,6 +20,7 @@ public partial class Form1 : Form
     public Form1(IServiceProvider provider)
     {
         _provider = provider;
+        _logger = provider.GetRequiredService<ILogger<Form1>>();
         InitializeComponent();
         var ports = SerialPort.GetPortNames();
         toolStripComboBox1.Items.AddRange(ports);
@@ -47,7 +50,7 @@ public partial class Form1 : Form
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e);
+                    _logger.LogError(e, "Error when diposing background task");
                 }
                 finally
                 {
@@ -94,7 +97,7 @@ public partial class Form1 : Form
                         }
                         catch (Exception e)
                         {
-                            Console.Error.WriteLine(e);
+                            _logger.LogError(e, "Error when checking Enquiry");
                             Invoke(() =>
                             {
                                 toolStripStatusLabel4.Text = $"Enquery: Failed";
@@ -130,7 +133,7 @@ public partial class Form1 : Form
                     }
                     catch (Exception ez)
                     {
-                        Console.Error.WriteLine(ez);
+                        _logger.LogError(ez, "Error updating ErabliereAPI");
                         Invoke(() =>
                         {
                             toolStripStatusLabel5.Text = $"ErabliereAPI: {ez.Message.ReplaceLineEndings(" ")}";
@@ -139,7 +142,7 @@ public partial class Form1 : Form
                 }
                 catch (Exception e)
                 {
-                    Console.Error.WriteLine(e);
+                    _logger.LogError(e, "Error in the background task main loop");
 
                     if (!token.IsCancellationRequested)
                     {
