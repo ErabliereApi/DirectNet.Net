@@ -26,8 +26,18 @@ public static class SerialClientExtension
                nbBytesRead < nbByteToRead && 
                (additionnalPredicat == null || additionnalPredicat.Invoke(nbBytesRead, bytes)))
         {
-            nbBytesRead += 
-                await serialPort.BaseStream.ReadAsync(bytes.AsMemory(nbBytesRead, nbByteToRead - nbBytesRead), token2);
+            var readTask = serialPort.BaseStream.ReadAsync(bytes.AsMemory(nbBytesRead, nbByteToRead - nbBytesRead), token2).AsTask();
+
+            var t = await Task.WhenAny(Task.Delay(serialPort.ReadTimeout, token), readTask);
+
+            if (t == readTask)
+            {
+                nbBytesRead += readTask.Result;
+            }
+            else
+            {
+                throw new TimeoutException($"Timeout reading serial port {serialPort.PortName}. ReadTimeout: {serialPort.ReadTimeout}");
+            }
         }
 
         if (nbBytesRead != nbByteToRead)
