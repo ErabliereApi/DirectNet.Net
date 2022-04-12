@@ -98,7 +98,7 @@ public class DirectNetClient : IDirectNetClient
     {
         _logger?.LogDebug("Begin write on address {address}", address);
 
-        await EnquiryAsync(slaveAddress);
+        await EnquiryAsync(slaveAddress, token);
 
         var header = HeaderHelper.GenerateHeader(OperationType.Write, address, data.Length);
 

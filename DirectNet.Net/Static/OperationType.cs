@@ -2,5 +2,6 @@ namespace DirectNet.Net;
 
 public enum OperationType
 {
-    Read, Write
+    Read = 0x30,
+    Write = 0x38
 }

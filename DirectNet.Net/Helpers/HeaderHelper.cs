@@ -4,7 +4,7 @@ namespace DirectNet.Net.Helpers;
 
 public static class HeaderHelper
 {
-    public static Dictionary<string, byte> MemoryTypes = new Dictionary<string, byte>()
+    public static Dictionary<string, byte> MemoryTypes = new()
     {
         { "V", 0x31 }
     };
@@ -30,7 +30,7 @@ public static class HeaderHelper
 
         // Read or Write Request Field: Enter 30 if Read or 38 if write.
         // Byte 3
-        headerBytes[3] = operationType == OperationType.Read ? (byte)0x30 : (byte)0x38;
+        headerBytes[3] = (byte)operationType;
 
         // Data Type Field: Refer to Appendixes D-F for the appropriate PLC mapping. Example: DL205 V-memory is 31.
         // Byte 4

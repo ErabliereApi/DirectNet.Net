@@ -13,6 +13,7 @@ public partial class Form1 : Form
 {
     private readonly IServiceProvider _provider;
     private readonly ILogger<Form1> _logger;
+    private readonly IOptions<ErabliereApiOptionsWithSensors> _options;
     private IDirectNetClient? _client;
     private CancellationTokenSource? _cst;
     private Task? _task;
@@ -20,6 +21,7 @@ public partial class Form1 : Form
     public Form1(IServiceProvider provider)
     {
         _provider = provider;
+        _options = provider.GetRequiredService<IOptions<ErabliereApiOptionsWithSensors>>();
         _logger = provider.GetRequiredService<ILogger<Form1>>();
         InitializeComponent();
         var ports = SerialPort.GetPortNames();
@@ -105,18 +107,22 @@ public partial class Form1 : Form
                         }
                     }
 
+                    chrono.Reset();
                     chrono.Start();
 
                     var values = await _client.ReadVMemoryLocationsAsync("V4000", 24, format: FormatType.BCD, token: token);
 
-                    chrono.Stop();
+                    var msSerialRead = chrono.ElapsedMilliseconds;
+
+                    if (!string.IsNullOrWhiteSpace(toolStripStatusLabelError.Text))
+                    {
+                        toolStripStatusLabelError.Text = "";
+                    }
 
                     Invoke(() =>
                     {
-                        toolStripStatusLabel1.Text = $"Scan time: {chrono.ElapsedMilliseconds}ms";
+                        toolStripStatusLabel1.Text = $"Scan time: {msSerialRead}ms";
                     });
-
-                    chrono.Reset();
 
                     UpdateUI(values);
 
@@ -139,10 +145,37 @@ public partial class Form1 : Form
                             toolStripStatusLabel5.Text = $"ErabliereAPI: {ez.Message.ReplaceLineEndings(" ")}";
                         });
                     }
+
+                    chrono.Stop();
+
+                    if (_options.Value.PLCScanFrequencyInSeconds > 0)
+                    {
+                        var delay = (int)((_options.Value.PLCScanFrequencyInSeconds * 1000) - chrono.ElapsedMilliseconds);
+
+                        if (delay > 0)
+                        {
+                            await Task.Delay(delay);
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Error in the background task main loop");
+
+                    try
+                    {
+                        Invoke(() =>
+                        {
+                            if (e is TimeoutException)
+                            {
+                                toolStripStatusLabelError.Text = "Error: Timout reading com port.";
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error when settings error message in the UI.");
+                    }
 
                     if (!token.IsCancellationRequested)
                     {

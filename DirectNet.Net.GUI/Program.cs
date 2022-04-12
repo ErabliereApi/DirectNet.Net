@@ -43,6 +43,7 @@ internal static class Program
             o.TenantId = _options.TenantId;
             o.CapteursIds = _options.CapteursIds;
             o.SendIntervalInMinutes = _options.SendIntervalInMinutes;
+            o.PLCScanFrequencyInSeconds = _options.PLCScanFrequencyInSeconds;
         });
         serviceCollection.AddOptions<AzureADClientCreadentialsOptions>().Configure<IOptions<ErabliereApiOptionsWithSensors>>((o, d) =>
         {

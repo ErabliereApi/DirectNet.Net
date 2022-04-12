@@ -82,9 +82,10 @@ partial class Form1
             this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabelError = new System.Windows.Forms.ToolStripStatusLabel();
             this.groupBox1.SuspendLayout();
             this.groupBox22.SuspendLayout();
             this.groupBox23.SuspendLayout();
@@ -611,7 +612,8 @@ partial class Form1
             this.toolStripStatusLabel2,
             this.toolStripStatusLabel3,
             this.toolStripStatusLabel4,
-            this.toolStripStatusLabel5});
+            this.toolStripStatusLabel5,
+            this.toolStripStatusLabelError});
             this.statusStrip1.Location = new System.Drawing.Point(0, 496);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(636, 22);
@@ -643,6 +645,12 @@ partial class Form1
             this.toolStripStatusLabel4.Size = new System.Drawing.Size(74, 17);
             this.toolStripStatusLabel4.Text = "Enquery: n/a";
             // 
+            // toolStripStatusLabel5
+            // 
+            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
+            this.toolStripStatusLabel5.Size = new System.Drawing.Size(73, 17);
+            this.toolStripStatusLabel5.Text = "ErabliereAPI:";
+            // 
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -658,11 +666,10 @@ partial class Form1
             this.toolStripComboBox1.Name = "toolStripComboBox1";
             this.toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
             // 
-            // toolStripStatusLabel5
+            // toolStripStatusLabelError
             // 
-            this.toolStripStatusLabel5.Name = "toolStripStatusLabel5";
-            this.toolStripStatusLabel5.Size = new System.Drawing.Size(73, 17);
-            this.toolStripStatusLabel5.Text = "ErabliereAPI:";
+            this.toolStripStatusLabelError.Name = "toolStripStatusLabelError";
+            this.toolStripStatusLabelError.Size = new System.Drawing.Size(0, 17);
             // 
             // Form1
             // 
@@ -791,4 +798,5 @@ partial class Form1
     private ToolStripStatusLabel toolStripStatusLabel3;
     private ToolStripStatusLabel toolStripStatusLabel4;
     private ToolStripStatusLabel toolStripStatusLabel5;
+    private ToolStripStatusLabel toolStripStatusLabelError;
 }
