@@ -10,9 +10,13 @@ var logger = LoggerFactory.Create(builder =>
 
 var directnet = new DirectNetClient("COM4", 5000, logger: logger.CreateLogger<DirectNetClient>());
 
+int returnCode = 1;
+
 try
 {
-    await Examples.ReadVMemoryLocation(directnet);
+    await Examples.ReadAndWriteVMemoryLocation(directnet);
+
+    returnCode = 0;
 }
 catch (Exception ex)
 {
@@ -22,3 +26,5 @@ finally
 {
     directnet.Close();
 }
+
+return returnCode;

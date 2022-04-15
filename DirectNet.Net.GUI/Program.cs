@@ -1,5 +1,4 @@
 using ErabliereAPI.Proxy;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Serilog;
@@ -20,6 +19,8 @@ internal static class Program
         var logger = new LoggerConfiguration()
             .WriteTo.File("log.txt", outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
             .CreateLogger();
+
+        logger.Information("Starting DirectNet.Net.GUI app.");
 
         IServiceCollection serviceCollection = new ServiceCollection()
             .AddMemoryCache()
@@ -55,9 +56,37 @@ internal static class Program
         serviceCollection.AddHttpClient("ErabliereAPI")
                          .AddHttpMessageHandler<AzureADClientCredentialsHandler>();
         IServiceProvider provider = serviceCollection.BuildServiceProvider();
+
+        logger.Information("ServiceProvider is ready.");
+
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
         ApplicationConfiguration.Initialize();
-        Application.Run(new Form1(provider));
+
+        Form1? form = default;
+
+        try
+        {
+            form = new Form1(provider);
+
+            logger.Information("ServiceProvider is ready. Now Running the form.");
+
+            Application.Run(form);
+        }
+        catch (Exception e)
+        {
+            logger.Fatal(e, "Exception in the main program");
+        }
+        finally
+        {
+            logger.Information("Finalizing DirectNet.Net.GUI app.");
+            if (form?.IsDisposed == false)
+            {
+                logger.Information("Form was not disposed.");
+                form.Dispose();
+            }
+        }
+
+        logger.Information("Terminating DirectNet.Net.GUI app.");
     }
 }

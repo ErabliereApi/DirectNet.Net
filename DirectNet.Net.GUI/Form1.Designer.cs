@@ -28,6 +28,7 @@ partial class Form1
     /// </summary>
     private void InitializeComponent()
     {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox22 = new System.Windows.Forms.GroupBox();
             this.label_main24 = new System.Windows.Forms.Label();
@@ -83,9 +84,10 @@ partial class Form1
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel4 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel5 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabelError = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
-            this.toolStripStatusLabelError = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripResetDriverButton = new System.Windows.Forms.ToolStripButton();
             this.groupBox1.SuspendLayout();
             this.groupBox22.SuspendLayout();
             this.groupBox23.SuspendLayout();
@@ -147,7 +149,7 @@ partial class Form1
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Capteurs Vaccium";
-            this.groupBox1.Enter += new System.EventHandler(this.groupBox1_Enter);
+            this.groupBox1.Enter += new System.EventHandler(this.GroupBox1_Enter);
             // 
             // groupBox22
             // 
@@ -625,14 +627,14 @@ partial class Form1
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
             this.toolStripStatusLabel1.Size = new System.Drawing.Size(85, 17);
             this.toolStripStatusLabel1.Text = "Scan Time: n/a";
-            this.toolStripStatusLabel1.Click += new System.EventHandler(this.toolStripStatusLabel1_Click);
+            this.toolStripStatusLabel1.Click += new System.EventHandler(this.ToolStripStatusLabel1_Click);
             // 
             // toolStripStatusLabel2
             // 
             this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
             this.toolStripStatusLabel2.Size = new System.Drawing.Size(68, 17);
             this.toolStripStatusLabel2.Text = "State: Close";
-            this.toolStripStatusLabel2.Click += new System.EventHandler(this.toolStripStatusLabel2_Click);
+            this.toolStripStatusLabel2.Click += new System.EventHandler(this.ToolStripStatusLabel2_Click);
             // 
             // toolStripStatusLabel3
             // 
@@ -651,10 +653,16 @@ partial class Form1
             this.toolStripStatusLabel5.Size = new System.Drawing.Size(73, 17);
             this.toolStripStatusLabel5.Text = "ErabliereAPI:";
             // 
+            // toolStripStatusLabelError
+            // 
+            this.toolStripStatusLabelError.Name = "toolStripStatusLabelError";
+            this.toolStripStatusLabelError.Size = new System.Drawing.Size(0, 17);
+            // 
             // toolStrip1
             // 
             this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripComboBox1});
+            this.toolStripComboBox1,
+            this.toolStripResetDriverButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(636, 25);
@@ -666,10 +674,15 @@ partial class Form1
             this.toolStripComboBox1.Name = "toolStripComboBox1";
             this.toolStripComboBox1.Size = new System.Drawing.Size(121, 25);
             // 
-            // toolStripStatusLabelError
+            // toolStripResetDriverButton
             // 
-            this.toolStripStatusLabelError.Name = "toolStripStatusLabelError";
-            this.toolStripStatusLabelError.Size = new System.Drawing.Size(0, 17);
+            this.toolStripResetDriverButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.toolStripResetDriverButton.Image = ((System.Drawing.Image)(resources.GetObject("toolStripResetDriverButton.Image")));
+            this.toolStripResetDriverButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripResetDriverButton.Name = "toolStripResetDriverButton";
+            this.toolStripResetDriverButton.Size = new System.Drawing.Size(23, 22);
+            this.toolStripResetDriverButton.Text = "Reset Driver";
+            this.toolStripResetDriverButton.Click += new System.EventHandler(this.ToolStripResetDriverButton_Click);
             // 
             // Form1
             // 
@@ -681,6 +694,7 @@ partial class Form1
             this.Controls.Add(this.groupBox1);
             this.Name = "Form1";
             this.Text = "DirectNet.Net.GUI";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.groupBox22.ResumeLayout(false);
             this.groupBox22.PerformLayout();
@@ -799,4 +813,5 @@ partial class Form1
     private ToolStripStatusLabel toolStripStatusLabel4;
     private ToolStripStatusLabel toolStripStatusLabel5;
     private ToolStripStatusLabel toolStripStatusLabelError;
+    private ToolStripButton toolStripResetDriverButton;
 }

@@ -24,8 +24,12 @@ public partial class Form1 : Form
         _options = provider.GetRequiredService<IOptions<ErabliereApiOptionsWithSensors>>();
         _logger = provider.GetRequiredService<ILogger<Form1>>();
         InitializeComponent();
-        var ports = SerialPort.GetPortNames();
-        toolStripComboBox1.Items.AddRange(ports);
+        ChooseComPortAndLaunchTask();
+    }
+
+    private void ChooseComPortAndLaunchTask()
+    {
+        string[] ports = SetPortListCombobox();
         if (ports.Length > 0)
         {
             toolStripComboBox1.SelectedIndex = 0;
@@ -34,41 +38,17 @@ public partial class Form1 : Form
         }
     }
 
+    private string[] SetPortListCombobox()
+    {
+        toolStripComboBox1.Items.Clear();
+        var ports = SerialPort.GetPortNames();
+        toolStripComboBox1.Items.AddRange(ports);
+        return ports;
+    }
+
     private void RunAndManageBackgroundTask(string port)
     {
-        if (_cst != null)
-        {
-            _cst.Cancel();
-            _cst.Dispose();
-            if (_task != null)
-            {
-                if (_task.IsCompleted == false)
-                {
-                    _task.Wait(1000);
-                }
-                try
-                {
-                    _task.Dispose();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, "Error when diposing background task");
-                }
-                finally
-                {
-                    _task = null;
-                }
-            }
-        }
-
-        if (_client != null)
-        {
-            _client.Close();
-            toolStripStatusLabel2.Text = $"State: Close";
-            toolStripStatusLabel3.Text = "";
-            toolStripStatusLabel4.Text = $"Enquery: n/a";
-            _client.Dispose();
-        }
+        CleanupBackgroudTask();
 
         _cst = new CancellationTokenSource();
         _client = new DirectNetClient(port);
@@ -77,35 +57,13 @@ public partial class Form1 : Form
         {
             var chrono = new Stopwatch();
 
+            int exceptionInRow = 0;
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    if (!_client.IsOpen)
-                    {
-                        _client.Open();
-                        Invoke(() =>
-                        {
-                            toolStripStatusLabel2.Text = $"State: Open";
-                            toolStripStatusLabel3.Text = $"PortName: {_client.PortName}";
-                        });
-                        try
-                        {
-                            await _client.EnquiryAsync(1, token);
-                            Invoke(() =>
-                            {
-                                toolStripStatusLabel4.Text = $"Enquery: Succeded";
-                            });
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e, "Error when checking Enquiry");
-                            Invoke(() =>
-                            {
-                                toolStripStatusLabel4.Text = $"Enquery: Failed";
-                            });
-                        }
-                    }
+                    await OpenSerialClient(token);
 
                     chrono.Reset();
                     chrono.Start();
@@ -154,12 +112,28 @@ public partial class Form1 : Form
 
                         if (delay > 0)
                         {
-                            await Task.Delay(delay);
+                            await Task.Delay(delay, token);
                         }
                     }
+
+                    exceptionInRow = 0;
                 }
                 catch (Exception e)
                 {
+                    exceptionInRow++;
+
+                    if (exceptionInRow >= 3)
+                    {
+                        try
+                        {
+                            _client.Close();
+                        }
+                        catch (Exception ec)
+                        {
+                            _logger.LogError(ec, "Error trying to close the serial client after 3 exceptions");
+                        }
+                    }
+
                     _logger.LogError(e, "Error in the background task main loop");
 
                     try
@@ -170,6 +144,10 @@ public partial class Form1 : Form
                             {
                                 toolStripStatusLabelError.Text = "Error: Timout reading com port.";
                             }
+                            else
+                            {
+                                toolStripStatusLabelError.Text = e.Message;
+                            }
                         });
                     }
                     catch (Exception ex)
@@ -179,11 +157,45 @@ public partial class Form1 : Form
 
                     if (!token.IsCancellationRequested)
                     {
-                        await Task.Delay(1000);
+                        await Task.Delay(1000, token);
                     }
                 }
             }
         }, token);
+    }
+
+    private async Task OpenSerialClient(CancellationToken token)
+    {
+        if (_client == null)
+        {
+            throw new InvalidOperationException("Client must not be null to open the serial connection");
+        }
+
+        if (!_client.IsOpen)
+        {
+            _client.Open();
+            Invoke(() =>
+            {
+                toolStripStatusLabel2.Text = $"State: Open";
+                toolStripStatusLabel3.Text = $"PortName: {_client.PortName}";
+            });
+            try
+            {
+                await _client.EnquiryAsync(1, token);
+                Invoke(() =>
+                {
+                    toolStripStatusLabel4.Text = $"Enquery: Succeded";
+                });
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error when checking Enquiry");
+                Invoke(() =>
+                {
+                    toolStripStatusLabel4.Text = $"Enquery: Failed";
+                });
+            }
+        }
     }
 
     public DateTime _lastSend;
@@ -397,18 +409,84 @@ public partial class Form1 : Form
         }
     }
 
-    private void groupBox1_Enter(object sender, EventArgs e)
+    private void GroupBox1_Enter(object sender, EventArgs e)
     {
 
     }
 
-    private void toolStripStatusLabel1_Click(object sender, EventArgs e)
+    private void ToolStripStatusLabel1_Click(object sender, EventArgs e)
     {
 
     }
 
-    private void toolStripStatusLabel2_Click(object sender, EventArgs e)
+    private void ToolStripStatusLabel2_Click(object sender, EventArgs e)
     {
 
+    }
+
+    private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+    {
+        _logger.LogInformation(nameof(Form1_FormClosing));
+        if (_cst != null)
+        {
+            _logger.LogInformation("CancellationTokenSource.Cancel");
+            _cst.Cancel();
+            _logger.LogInformation("Form1.CleanupBackgroupTask");
+            CleanupBackgroudTask();
+        }
+    }
+
+    private void CleanupBackgroudTask()
+    {
+        if (_cst != null)
+        {
+            try
+            {
+                _cst.Cancel();
+                _cst.Dispose();
+                if (_task != null)
+                {
+                    if (_task.IsCompleted == false)
+                    {
+                        _task.Wait(1000);
+                    }
+
+                    try
+                    {
+                        _task.Dispose();
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Error when diposing background task. State was {taskStatus}. Exceptions: {taskExceptions}", _task.Status, _task.Exception);
+                    }
+                    finally
+                    {
+                        _task = null;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error in the task cancellation process");
+            }
+        }
+
+        if (_client != null)
+        {
+            _logger.LogInformation("Closing com port {portName}", _client.PortName);
+            _client.Close();
+            toolStripStatusLabel2.Text = $"State: Close";
+            toolStripStatusLabel3.Text = "";
+            toolStripStatusLabel4.Text = $"Enquery: n/a";
+            _logger.LogInformation("Disposing serial client");
+            _client.Dispose();
+        }
+    }
+
+    private void ToolStripResetDriverButton_Click(object sender, EventArgs e)
+    {
+        CleanupBackgroudTask();
+
+        ChooseComPortAndLaunchTask();
     }
 }
