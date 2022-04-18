@@ -1,4 +1,5 @@
 ﻿using DirectNet.Net.Extensions;
+using DirectNet.Net.Helpers;
 
 namespace DirectNet.Net.Console;
 
@@ -36,6 +37,25 @@ public static class Examples
         for (int i = 0; i < values.Length; i++)
         {
             System.Console.WriteLine($"{i} {values[i]}");
+        }
+
+        return values;
+    }
+
+    public static async Task<byte[]> ReadInputPoints(IDirectNetClient directnet)
+    {
+        directnet.Open();
+
+        // Work in progress
+        var count = OctalHelper.FromOctal("40437") - OctalHelper.FromOctal("40400");
+
+        System.Console.WriteLine($"Count: {count}");
+
+        var values = await directnet.ReadAsync("V40400", count);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            System.Console.WriteLine($"{i} {Convert.ToString(values[i], 2).PadLeft(16, '0')}");
         }
 
         return values;

@@ -3,10 +3,23 @@ using DirectNet.Net;
 using DirectNet.Net.Console;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.IO.Ports;
 
 var (provider, _) = ServicesSetup.GetServiceProvider();
 
-var directnet = new DirectNetClient(args[0], 5000, logger: provider.GetRequiredService<ILogger<DirectNetClient>>());
+var comPort = SerialPort.GetPortNames().FirstOrDefault();
+
+if (args.Length > 0)
+{
+    comPort = args[0];
+}
+
+if (comPort == null)
+{
+    throw new ArgumentException("No comport send as parameter or automatically detected");
+}
+
+var directnet = new DirectNetClient(comPort, 5000, logger: provider.GetRequiredService<ILogger<DirectNetClient>>());
 
 int returnCode = 1;
 
