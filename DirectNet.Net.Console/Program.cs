@@ -1,20 +1,20 @@
-﻿using DirectNet.Net;
+﻿using CustomLogic.Common;
+using DirectNet.Net;
 using DirectNet.Net.Console;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-var logger = LoggerFactory.Create(builder =>
-{
-    builder.SetMinimumLevel(LogLevel.Warning)
-           .AddConsole();
-});
+var (provider, _) = ServicesSetup.GetServiceProvider();
 
-var directnet = new DirectNetClient("COM4", 5000, logger: logger.CreateLogger<DirectNetClient>());
+var directnet = new DirectNetClient(args[0], 5000, logger: provider.GetRequiredService<ILogger<DirectNetClient>>());
 
 int returnCode = 1;
 
 try
 {
-    await Examples.ReadAndWriteVMemoryLocation(directnet);
+    var values = await Examples.ReadVMemoryLocationInBCD(directnet);
+
+    await ErabliereApiTasks.Send24ValuesAsync(provider, values, CancellationToken.None);
 
     returnCode = 0;
 }

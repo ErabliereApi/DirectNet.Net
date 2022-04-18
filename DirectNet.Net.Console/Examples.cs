@@ -26,4 +26,18 @@ public static class Examples
             System.Console.WriteLine($"{i} {values[i]}");
         }
     }
+
+    public static async Task<int[]> ReadVMemoryLocationInBCD(IDirectNetClient directnet)
+    {
+        directnet.Open();
+
+        var values = await directnet.ReadVMemoryLocationsAsync("V4000", 24, Static.FormatType.BCD);
+
+        for (int i = 0; i < values.Length; i++)
+        {
+            System.Console.WriteLine($"{i} {values[i]}");
+        }
+
+        return values;
+    }
 }

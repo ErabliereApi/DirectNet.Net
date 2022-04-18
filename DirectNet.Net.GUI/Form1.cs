@@ -1,6 +1,6 @@
+using CustomLogic.Common;
 using DirectNet.Net.Extensions;
 using DirectNet.Net.Static;
-using ErabliereAPI.Proxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -218,22 +218,7 @@ public partial class Form1 : Form
                 toolStripStatusLabel5.Text = $"ErabliereAPI: Sending datas {DateTime.Now}";
             });
 
-            using var scope = _provider.CreateScope();
-
-            var httpClientfactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
-
-            var httpClient = httpClientfactory.CreateClient("ErabliereAPI");
-
-            var erabliereApi = new ErabliereApiProxy(options.BaseUrl, httpClient);
-
-            for (int i = 0; i < values.Length; i++)
-            {
-                await erabliereApi.DonneesCapteurPOSTAsync(options.CapteursIds[i], new PostDonneeCapteur
-                {
-                    IdCapteur = options.CapteursIds[i],
-                    V = values[i]
-                }, token);
-            }
+            await ErabliereApiTasks.Send24ValuesAsync(_provider, values, token);
 
             _lastSend = DateTime.Now;
         }

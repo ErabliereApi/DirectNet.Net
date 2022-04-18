@@ -1,4 +1,4 @@
-﻿namespace DirectNet.Net.GUI;
+﻿namespace CustomLogic.Common;
 
 public class ErabliereApiOptionsWithSensors : ErabliereAPI.Proxy.ErabliereApiOptions
 {
