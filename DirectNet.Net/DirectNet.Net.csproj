@@ -4,10 +4,25 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+    <PropertyGroup>
+    <PackageId>DirectNet.Net</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Frédéric Jacques</Authors>
+    <Company>ErabliereAPI</Company>
+    <PackageTags>DirectNet;Automation Direct</PackageTags>
+    <Description>
+      DirectNet.Net is a package that allow to communicate on a serial port to a
+      automation direct PLC using the DirectNet protocol. 
+    </Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <ProjectUrl>https://github.com/freddycoder/DirectNet.Net</ProjectUrl>
+    <Copyright>Copyright © ErabliereAPI 2022</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ErabliereAPI.Proxy" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
   </ItemGroup>
