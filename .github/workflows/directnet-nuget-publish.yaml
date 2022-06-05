@@ -25,7 +25,7 @@ jobs:
       - name: Push the package to nuget.org
         run: |
           # Extract the version from the csproj file
-          $VERSION=([xml] (Get-Content .\DirectNet.Net\DirectNet.Net.csproj)).Project.PropertyGroup.Version
+          $VERSION=@(([xml] (Get-Content .\DirectNet.Net\DirectNet.Net.csproj -Encoding utf8)).Project.PropertyGroup.Version)[1]
 
           # Publish the package to nuget.org
           dotnet nuget push ./bin/Release/DirectNet.Net.$VERSION.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.DirectNetAPIKey }}
