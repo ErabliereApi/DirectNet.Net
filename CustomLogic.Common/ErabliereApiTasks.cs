@@ -16,7 +16,7 @@ public static class ErabliereApiTasks
 
         var httpClient = httpClientfactory.CreateClient("ErabliereAPI");
 
-        var erabliereApi = new ErabliereApiProxy(options.BaseUrl, httpClient);
+        var erabliereApi = new ErabliereAPIProxy(options.BaseUrl, httpClient);
         
         for (int i = 0; i < values.Length; i++)
         {

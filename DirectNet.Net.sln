@@ -11,9 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectNet.Net.Console", "Di
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectNet.Net.GUI", "DirectNet.Net.GUI\DirectNet.Net.GUI.csproj", "{5742EE27-56EB-4830-8B4A-F32F936283A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ErabliereAPI.Proxy", "ErabliereAPI.Proxy\ErabliereAPI.Proxy.csproj", "{510640AC-E27F-4B94-8510-8311EBC494C6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomLogic.Common", "CustomLogic.Common\CustomLogic.Common.csproj", "{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLogic.Common", "CustomLogic.Common\CustomLogic.Common.csproj", "{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +35,6 @@ Global
 		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5742EE27-56EB-4830-8B4A-F32F936283A5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{510640AC-E27F-4B94-8510-8311EBC494C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{510640AC-E27F-4B94-8510-8311EBC494C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{510640AC-E27F-4B94-8510-8311EBC494C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{510640AC-E27F-4B94-8510-8311EBC494C6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
