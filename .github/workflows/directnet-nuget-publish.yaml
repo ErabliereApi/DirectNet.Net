@@ -6,7 +6,8 @@ on:
       - main
     paths-include:
       - DirectNet.Net/**
-      - .github/workflows/directnet-nuget-publish.yaml
+    paths-ignore:
+      - .github/workflows/**
   workflow_dispatch:
 
 env:
