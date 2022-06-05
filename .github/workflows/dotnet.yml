@@ -3,11 +3,11 @@ name: .NET
 on:
   push:
     branches: [ main ]
-    paths-exclude:
+    paths-ignore:
       - .github/workflows/directnet-nuget-publish.yaml
   pull_request:
     branches: [ main ]
-    paths-exclude:
+    paths-ignore:
       - .github/workflows/directnet-nuget-publish.yaml
 
 jobs:
