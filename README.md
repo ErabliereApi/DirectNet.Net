@@ -4,6 +4,12 @@ C# DirectNet serial client. Use to communicate with automation direct PLC such a
 
 > ASCII mode is not supported.
 
+## Installation
+
+```
+<PackageReference Include="DirectNet.Net" Version="1.0.0" />
+```
+
 ## References
 
 https://support.automationdirect.com/docs/an-misc-029.pdf

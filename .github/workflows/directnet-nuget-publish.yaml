@@ -8,6 +8,7 @@ on:
       - DirectNet.Net/**
     paths-ignore:
       - .github/workflows/**
+      - '*.md'
   workflow_dispatch:
 
 env:
