@@ -1,4 +1,4 @@
-name: ErabliereAPI.Proxy-Publish
+name: DirectNet.Net-Publish
 
 on:
   push:
