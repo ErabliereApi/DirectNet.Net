@@ -7,7 +7,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   
-    <PropertyGroup>
+  <PropertyGroup>
     <PackageId>DirectNet.Net</PackageId>
     <Version>1.0.0</Version>
     <Authors>Frédéric Jacques</Authors>
