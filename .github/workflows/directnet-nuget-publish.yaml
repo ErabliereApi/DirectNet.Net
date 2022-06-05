@@ -3,7 +3,7 @@ name: ErabliereAPI.Proxy-Publish
 on:
   push:
     branches:
-      - master
+      - main
     paths-include:
       - DirectNet.Net/**
       - .github/workflows/directnet-nuget-publish.yaml
