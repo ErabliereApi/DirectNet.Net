@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="ErabliereAPI.Proxy" Version="1.1.0" />
+		<PackageReference Include="ErabliereAPI.Proxy" Version="1.1.1" />
 		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.1" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
