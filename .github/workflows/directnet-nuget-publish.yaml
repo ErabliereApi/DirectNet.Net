@@ -4,11 +4,8 @@ on:
   push:
     branches:
       - main
-    paths-include:
+    paths:
       - DirectNet.Net/**
-    paths-ignore:
-      - .github/workflows/**
-      - '*.md'
   workflow_dispatch:
 
 env:
