@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: dotnet build
         run: dotnet build $PROJECT_PATH -c Release -o bin/Release
