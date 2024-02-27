@@ -9,7 +9,7 @@
   
   <PropertyGroup>
     <PackageId>DirectNet.Net</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>Frédéric Jacques</Authors>
     <Company>ErabliereAPI</Company>
     <PackageTags>DirectNet;Automation Direct</PackageTags>
@@ -19,12 +19,12 @@
     </Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <ProjectUrl>https://github.com/freddycoder/DirectNet.Net</ProjectUrl>
-    <Copyright>Copyright © ErabliereAPI 2022</Copyright>
+    <Copyright>Copyright © ErabliereAPI 2024</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.7" />
   </ItemGroup>
 
 </Project>
