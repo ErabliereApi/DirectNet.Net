@@ -1,6 +1,7 @@
 using CustomLogic.Common;
 using DirectNet.Net.Extensions;
 using DirectNet.Net.Static;
+using ErabliereAPI.Proxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -29,12 +30,23 @@ public partial class Form1 : Form
 
     private void ChooseComPortAndLaunchTask()
     {
-        string[] ports = SetPortListCombobox();
-        if (ports.Length > 0)
+        try
         {
-            toolStripComboBox1.SelectedIndex = 0;
-            toolStripComboBox1.SelectedIndexChanged += ToolStripComboBox1_SelectedIndexChanged;
-            RunAndManageBackgroundTask(ports[0]);
+            string[] ports = SetPortListCombobox();
+            if (ports.Length > 0)
+            {
+                toolStripComboBox1.SelectedIndex = 0;
+                toolStripComboBox1.SelectedIndexChanged += ToolStripComboBox1_SelectedIndexChanged;
+                RunAndManageBackgroundTask(ports[0]);
+            }
+            else
+            {
+                RunAndManageBackgroundTask("");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogCritical(ex, ex.Message);
         }
     }
 
@@ -51,7 +63,10 @@ public partial class Form1 : Form
         CleanupBackgroudTask();
 
         _cst = new CancellationTokenSource();
-        _client = new DirectNetClient(port);
+        if (!string.IsNullOrWhiteSpace(port))
+        {
+            _client = new DirectNetClient(port);
+        }
         var token = _cst.Token;
         _task = Task.Run(async () =>
         {
@@ -59,62 +74,49 @@ public partial class Form1 : Form
 
             int exceptionInRow = 0;
 
+            var api = _provider.GetRequiredService<IErabliereAPIProxy>();
+
             while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    await OpenSerialClient(token);
+                    var erablieres = await api.ErablieresAllAsync(
+                        select: null, 
+                        filter: $"id eq {_options.Value.ErabliereId}", 
+                        top: null, 
+                        skip: null, 
+                        expand: "capteurs($expand=donneescapteur($top=1;$orderby=d desc))",
+                        orderby: null);
 
-                    chrono.Reset();
-                    chrono.Start();
-
-                    var values = await _client.ReadVMemoryLocationsAsync("V4000", 24, format: FormatType.BCD, token: token);
-
-                    var msSerialRead = chrono.ElapsedMilliseconds;
-
-                    if (!string.IsNullOrWhiteSpace(toolStripStatusLabelError.Text))
-                    {
-                        toolStripStatusLabelError.Text = "";
-                    }
+                    var erabliere = erablieres.First();
 
                     Invoke(() =>
                     {
-                        toolStripStatusLabel1.Text = $"Scan time: {msSerialRead}ms";
+                        groupBox1.Text = erabliere.Nom;
+                        groupBox2.Text = "PLC DL06";
+
+                        for (var i = 0; i < _options.Value.CapteursIds.Length; i++)
+                        {
+                            var capteur = erabliere.Capteurs?.FirstOrDefault(c => c.Id == _options.Value.CapteursIds[i]);
+
+                            if (capteur != null)
+                            {
+                                switch (i)
+                                {
+                                    case 0:
+                                        break;
+                                    case 1:
+                                        break;
+                                    case 2:
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                        }
                     });
 
-                    UpdateUI(values);
-
-                    try
-                    {
-                        await UpdateErabliereAPI(values, token);
-                        if (toolStripStatusLabel5.Text != "ErabliereAPI: Disabled")
-                        {
-                            Invoke(() =>
-                            {
-                                toolStripStatusLabel5.Text = $"ErabliereAPI: Last send {_lastSend}";
-                            });
-                        }
-                    }
-                    catch (Exception ez)
-                    {
-                        _logger.LogError(ez, "Error updating ErabliereAPI");
-                        Invoke(() =>
-                        {
-                            toolStripStatusLabel5.Text = $"ErabliereAPI: {ez.Message.ReplaceLineEndings(" ")}";
-                        });
-                    }
-
-                    chrono.Stop();
-
-                    if (_options.Value.PLCScanFrequencyInSeconds > 0)
-                    {
-                        var delay = (int)((_options.Value.PLCScanFrequencyInSeconds * 1000) - chrono.ElapsedMilliseconds);
-
-                        if (delay > 0)
-                        {
-                            await Task.Delay(delay, token);
-                        }
-                    }
+                    await Task.Delay(TimeSpan.FromSeconds(_options.Value.PLCScanFrequencyInSeconds), token);
 
                     exceptionInRow = 0;
                 }
@@ -126,7 +128,7 @@ public partial class Form1 : Form
                     {
                         try
                         {
-                            _client.Close();
+                            _client?.Close();
                         }
                         catch (Exception ec)
                         {
@@ -233,164 +235,6 @@ public partial class Form1 : Form
         else
         {
             throw new NotImplementedException("Event is not implemented when the sender is not a combobox.");
-        }
-    }
-
-    private void UpdateUI(int[] values)
-    {
-        for (int a = 0; a < values.Length; a++)
-        {
-            var value = values[a] / 10.0;
-
-            switch (a)
-            {
-                case 0:
-                    Invoke(() =>
-                    {
-                        label_main1.Text = value.ToString();
-                    });
-                    break;
-                case 1:
-                    Invoke(() =>
-                    {
-                        label_main2.Text = value.ToString();
-                    });
-                    break;
-                case 2:
-                    Invoke(() =>
-                    {
-                        label_main3.Text = value.ToString();
-                    });
-                    break;
-                case 3:
-                    Invoke(() =>
-                    {
-                        label_main4.Text = value.ToString();
-                    });
-                    break;
-                case 4:
-                    Invoke(() =>
-                    {
-                        label_main5.Text = value.ToString();
-                    });
-                    break;
-                case 5:
-                    Invoke(() =>
-                    {
-                        label_main6.Text = value.ToString();
-                    });
-                    break;
-                case 6:
-                    Invoke(() =>
-                    {
-                        label_main7.Text = value.ToString();
-                    });
-                    break;
-                case 7:
-                    Invoke(() =>
-                    {
-                        label_main8.Text = value.ToString();
-                    });
-                    break;
-                case 8:
-                    Invoke(() =>
-                    {
-                        label_main9.Text = value.ToString();
-                    });
-                    break;
-                case 9:
-                    Invoke(() =>
-                    {
-                        label_main10.Text = value.ToString();
-                    });
-                    break;
-                case 10:
-                    Invoke(() =>
-                    {
-                        label_main11.Text = value.ToString();
-                    });
-                    break;
-                case 11:
-                    Invoke(() =>
-                    {
-                        label_main12.Text = value.ToString();
-                    });
-                    break;
-                case 12:
-                    Invoke(() =>
-                    {
-                        label_main13.Text = value.ToString();
-                    });
-                    break;
-                case 13:
-                    Invoke(() =>
-                    {
-                        label_main14.Text = value.ToString();
-                    });
-                    break;
-                case 14:
-                    Invoke(() =>
-                    {
-                        label_main15.Text = value.ToString();
-                    });
-                    break;
-                case 15:
-                    Invoke(() =>
-                    {
-                        label_main16.Text = value.ToString();
-                    });
-                    break;
-                case 16:
-                    Invoke(() =>
-                    {
-                        label_main17.Text = value.ToString();
-                    });
-                    break;
-                case 17:
-                    Invoke(() =>
-                    {
-                        label_main18.Text = value.ToString();
-                    });
-                    break;
-                case 18:
-                    Invoke(() =>
-                    {
-                        label_main19.Text = value.ToString();
-                    });
-                    break;
-                case 19:
-                    Invoke(() =>
-                    {
-                        label_main20.Text = value.ToString();
-                    });
-                    break;
-                case 20:
-                    Invoke(() =>
-                    {
-                        label_main21.Text = value.ToString();
-                    });
-                    break;
-                case 21:
-                    Invoke(() =>
-                    {
-                        label_main22.Text = value.ToString();
-                    });
-                    break;
-                case 22:
-                    Invoke(() =>
-                    {
-                        label_main23.Text = value.ToString();
-                    });
-                    break;
-                case 23:
-                    Invoke(() =>
-                    {
-                        label_main24.Text = value.ToString();
-                    });
-                    break;
-                default:
-                    break;
-            }
         }
     }
 

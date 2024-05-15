@@ -2,6 +2,8 @@
 
 public class ErabliereApiOptionsWithSensors : ErabliereAPI.Proxy.ErabliereApiOptions
 {
+    public Guid ErabliereId { get; set; }
+
     public Guid[] CapteursIds { get; set; } = Array.Empty<Guid>();
 
     /// <summary>

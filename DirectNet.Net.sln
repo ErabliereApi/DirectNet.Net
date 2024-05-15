@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectNet.Net.GUI", "Direct
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomLogic.Common", "CustomLogic.Common\CustomLogic.Common.csproj", "{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectNet.Net.Greenhouse.GUI", "DirectNet.Net.Greenhouse.GUI\DirectNet.Net.Greenhouse.GUI.csproj", "{7A5BE830-C862-4FCE-8BD0-ED7D109F9AD4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5CECBF1-D9C6-4D21-B9AB-583DC43937FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A5BE830-C862-4FCE-8BD0-ED7D109F9AD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A5BE830-C862-4FCE-8BD0-ED7D109F9AD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A5BE830-C862-4FCE-8BD0-ED7D109F9AD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A5BE830-C862-4FCE-8BD0-ED7D109F9AD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -29,7 +29,7 @@ public static class ServicesSetup
         {
             if (_options == null)
             {
-                var configPath = Environment.GetEnvironmentVariable("ERABLIERE_API_CONFIG") ?? "";
+                var configPath = Environment.GetEnvironmentVariable("ERABLIERE_API_GREENHOUSE_CONFIG") ?? "";
                 _options = JsonSerializer.Deserialize<ErabliereApiOptionsWithSensors>(File.ReadAllText(configPath)) ?? throw new InvalidOperationException("Options cannot be null");
             }
 
@@ -38,6 +38,7 @@ public static class ServicesSetup
             o.ClientSecret = _options.ClientSecret;
             o.Scope = _options.Scope;
             o.TenantId = _options.TenantId;
+            o.ErabliereId = _options.ErabliereId;
             o.CapteursIds = _options.CapteursIds;
             o.SendIntervalInMinutes = _options.SendIntervalInMinutes;
             o.PLCScanFrequencyInSeconds = _options.PLCScanFrequencyInSeconds;
@@ -51,6 +52,14 @@ public static class ServicesSetup
         });
         serviceCollection.AddHttpClient("ErabliereAPI")
                          .AddHttpMessageHandler<AzureADClientCredentialsHandler>();
+        serviceCollection.AddTransient<IErabliereAPIProxy>(sp =>
+        {
+            var factory = sp.GetRequiredService<IHttpClientFactory>();
+
+            var client = factory.CreateClient("ErabliereAPI");
+
+            return new ErabliereAPIProxy("https://erabliereapi.freddycoder.com", client);
+        });
         IServiceProvider provider = serviceCollection.BuildServiceProvider();
 
         logger.Information("ServiceProvider is ready.");
