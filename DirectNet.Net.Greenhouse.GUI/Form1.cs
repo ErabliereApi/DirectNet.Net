@@ -1,6 +1,4 @@
 using CustomLogic.Common;
-using DirectNet.Net.Extensions;
-using DirectNet.Net.Static;
 using ErabliereAPI.Proxy;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -80,12 +78,14 @@ public partial class Form1 : Form
             {
                 try
                 {
+                    var lastHour = DateTimeOffset.UtcNow - TimeSpan.FromHours(1);
+
                     var erablieres = await api.ErablieresAllAsync(
-                        select: null, 
-                        filter: $"id eq {_options.Value.ErabliereId}", 
-                        top: null, 
-                        skip: null, 
-                        expand: "capteurs($expand=donneescapteur($top=1;$orderby=d desc))",
+                        select: null,
+                        filter: $"id eq {_options.Value.ErabliereId}",
+                        top: null,
+                        skip: null,
+                        expand: $"capteurs($expand=donneescapteur($filter=d gt {lastHour:yyyy-MM-ddTHH:mm:ss.FFFZ};$top=1;$orderby=d desc))",
                         orderby: null);
 
                     var erabliere = erablieres.First();
@@ -94,6 +94,27 @@ public partial class Form1 : Form
                     {
                         groupBox1.Text = erabliere.Nom;
                         groupBox2.Text = "PLC DL06";
+
+                        groupBox15.Text = "Valve 1";
+                        groupBox16.Text = "Valve 2";
+
+                        groupBox14.Hide();
+                        label12.Hide();
+
+                        button1.Text = "Ouvrir";
+                        button2.Text = "Fermer";
+                        button3.Text = "Ouvrir";
+                        button4.Text = "Fermer";
+
+                        if (_client?.IsOpen == true)
+                        {
+
+                        }
+                        else
+                        {
+                            label13.Text = "Non connecté";
+                            label14.Text = "Non connecté";
+                        }
 
                         for (var i = 0; i < _options.Value.CapteursIds.Length; i++)
                         {
@@ -104,10 +125,48 @@ public partial class Form1 : Form
                                 switch (i)
                                 {
                                     case 0:
+                                        groupBox3.Text = capteur.Nom;
+                                        label1.Text = FormatLabelText(capteur);
                                         break;
                                     case 1:
+                                        groupBox4.Text = capteur.Nom;
+                                        label2.Text = FormatLabelText(capteur);
                                         break;
                                     case 2:
+                                        groupBox5.Text = capteur.Nom;
+                                        label3.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 3:
+                                        groupBox6.Text = capteur.Nom;
+                                        label4.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 4:
+                                        groupBox7.Text = capteur.Nom;
+                                        label5.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 5:
+                                        groupBox8.Text = capteur.Nom;
+                                        label6.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 6:
+                                        groupBox9.Text = capteur.Nom;
+                                        label7.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 7:
+                                        groupBox10.Text = capteur.Nom;
+                                        label8.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 8:
+                                        groupBox11.Text = capteur.Nom;
+                                        label9.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 9:
+                                        groupBox12.Text = capteur.Nom;
+                                        label10.Text = FormatLabelText(capteur);
+                                        break;
+                                    case 10:
+                                        groupBox13.Text = capteur.Nom;
+                                        label11.Text = FormatLabelText(capteur);
                                         break;
                                     default:
                                         break;
@@ -164,6 +223,18 @@ public partial class Form1 : Form
                 }
             }
         }, token);
+    }
+
+    private string FormatLabelText(Capteur capteur)
+    {
+        var data = capteur.DonneesCapteur?.SingleOrDefault();
+
+        if (data == null)
+        {
+            return "n/a";
+        }
+
+        return $"{data.Valeur / 10} {capteur.Symbole}";
     }
 
     private async Task OpenSerialClient(CancellationToken token)
@@ -317,5 +388,40 @@ public partial class Form1 : Form
         CleanupBackgroudTask();
 
         ChooseComPortAndLaunchTask();
+    }
+
+    private void OuvrirValve1(object sender, EventArgs e)
+    {
+        if (_client?.IsOpen == true)
+        {
+            if (_client?.IsOpen == true)
+            {
+                _client.WriteAsync("V4000", new byte[] { 0b1 });
+            }
+        }
+    }
+
+    private void FermerVavle1(object sender, EventArgs e)
+    {
+        if (_client?.IsOpen == true)
+        {
+            _client.WriteAsync("V4000", new byte[] { 0b0 });
+        }
+    }
+
+    private void OuvrirValve2(object sender, EventArgs e)
+    {
+        if (_client?.IsOpen == true)
+        {
+            _client.WriteAsync("V4002", new byte[] { 0b1 });
+        }
+    }
+
+    private void FermerValve2(object sender, EventArgs e)
+    {
+        if (_client?.IsOpen == true)
+        {
+            _client.WriteAsync("V4002", new byte[] { 0b0 });
+        }
     }
 }
