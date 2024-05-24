@@ -81,6 +81,7 @@ public partial class Form1 : Form
                     var lastHour = DateTimeOffset.UtcNow - TimeSpan.FromHours(1);
 
                     var erablieres = await api.ErablieresAllAsync(
+                        my: null,
                         select: null,
                         filter: $"id eq {_options.Value.ErabliereId}",
                         top: null,
@@ -90,6 +91,8 @@ public partial class Form1 : Form
 
                     var erabliere = erablieres.First();
 
+                    var precipitations = await api.HourlyAsync(erabliere.Id.Value, "fr-CA");
+
                     Invoke(() =>
                     {
                         groupBox1.Text = erabliere.Nom;
@@ -98,8 +101,8 @@ public partial class Form1 : Form
                         groupBox15.Text = "Valve 1";
                         groupBox16.Text = "Valve 2";
 
-                        groupBox14.Hide();
-                        label12.Hide();
+                        groupBox14.Text = "Précipitation 12h";
+                        label12.Text = $"{precipitations.Sum(f => f.HasPrecipitation == true ? 1 : 0)} heures";
 
                         button1.Text = "Ouvrir";
                         button2.Text = "Fermer";
