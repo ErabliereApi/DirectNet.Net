@@ -57,7 +57,7 @@ public class DirectNetClient : IDirectNetClient
 
     public void Close()
     {
-        _logger?.LogInformation("Closing serial port", _serialPort.PortName);
+        _logger?.LogInformation("Closing serial port {portName}", _serialPort.PortName);
         _serialPort.Close();
         _logger?.LogInformation("Serial port {portName} now close", _serialPort.PortName);
     }

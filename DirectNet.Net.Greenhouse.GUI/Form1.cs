@@ -16,6 +16,7 @@ public partial class Form1 : Form
     private IDirectNetClient? _client;
     private CancellationTokenSource? _cst;
     private Task? _task;
+    private const int readLength = 8;
 
     public Form1(IServiceProvider provider)
     {
@@ -33,9 +34,13 @@ public partial class Form1 : Form
             string[] ports = SetPortListCombobox();
             if (ports.Length > 0)
             {
-                toolStripComboBox1.SelectedIndex = 0;
+                toolStripComboBox1.SelectedIndex = ports.ToList().IndexOf("COM4");
+                if (toolStripComboBox1.SelectedIndex == -1)
+                {
+                    toolStripComboBox1.SelectedIndex = 0;
+                }
                 toolStripComboBox1.SelectedIndexChanged += ToolStripComboBox1_SelectedIndexChanged;
-                RunAndManageBackgroundTask(ports[0]);
+                RunAndManageBackgroundTask(ports[toolStripComboBox1.SelectedIndex]);
             }
             else
             {
@@ -51,24 +56,35 @@ public partial class Form1 : Form
     private string[] SetPortListCombobox()
     {
         toolStripComboBox1.Items.Clear();
-        var ports = SerialPort.GetPortNames();
+        var ports = SerialPort.GetPortNames().OrderBy(p => p).ToArray();
+        _logger.LogInformation("Available ports: {ports}", ports.Aggregate((a, b) => $"{a}, {b}"));
         toolStripComboBox1.Items.AddRange(ports);
         return ports;
     }
 
     private void RunAndManageBackgroundTask(string port)
     {
+        _logger.LogInformation("RunAndManageBackgroundTask with port {port}", port);
         CleanupBackgroudTask();
+        _logger.LogInformation("CleanupBackgroudTask done. Creating new CancellationTokenSource");
 
         _cst = new CancellationTokenSource();
-        if (!string.IsNullOrWhiteSpace(port))
-        {
-            _client = new DirectNetClient(port);
-        }
         var token = _cst.Token;
         _task = Task.Run(async () =>
         {
+            _logger.LogInformation("Task.Run started");
+
             var chrono = new Stopwatch();
+
+            if (_client?.IsOpen == false || _client == null)
+            {
+                if (_client == null)
+                {
+                    _logger.LogInformation("Creating new DirectNetClient with port {port}", port);
+                    _client = new DirectNetClient(port);
+                }
+                await OpenSerialClient(token);
+            }
 
             int exceptionInRow = 0;
 
@@ -78,6 +94,13 @@ public partial class Form1 : Form
             {
                 try
                 {
+                    if (_client == null)
+                    {
+                        throw new InvalidOperationException("Client must not be null to run the background task");
+                    }
+
+                    var values = await _client.ReadAsync("V4000", readLength, token: token);
+
                     var lastHour = DateTimeOffset.UtcNow - TimeSpan.FromHours(1);
 
                     var erablieres = await api.ErablieresAllAsync(
@@ -87,11 +110,17 @@ public partial class Form1 : Form
                         top: null,
                         skip: null,
                         expand: $"capteurs($expand=donneescapteur($filter=d gt {lastHour:yyyy-MM-ddTHH:mm:ss.FFFZ};$top=1;$orderby=d desc))",
-                        orderby: null);
+                        orderby: null,
+                        cancellationToken: token);
 
                     var erabliere = erablieres.First();
 
-                    var precipitations = await api.HourlyAsync(erabliere.Id.Value, "fr-CA");
+                    if (erabliere.Id == null)
+                    {
+                        throw new InvalidOperationException("Erabliere Id must not be null");
+                    }
+
+                    var precipitations = await api.HourlyAsync(erabliere.Id.Value, "fr-CA", cancellationToken: token);
 
                     Invoke(() =>
                     {
@@ -101,7 +130,7 @@ public partial class Form1 : Form
                         groupBox15.Text = "Valve 1";
                         groupBox16.Text = "Valve 2";
 
-                        groupBox14.Text = "PrÈcipitation 12h";
+                        groupBox14.Text = "Pr√©cipitation 12h";
                         label12.Text = $"{precipitations.Sum(f => f.HasPrecipitation == true ? 1 : 0)} heures";
 
                         button1.Text = "Ouvrir";
@@ -109,15 +138,7 @@ public partial class Form1 : Form
                         button3.Text = "Ouvrir";
                         button4.Text = "Fermer";
 
-                        if (_client?.IsOpen == true)
-                        {
-
-                        }
-                        else
-                        {
-                            label13.Text = "Non connectÈ";
-                            label14.Text = "Non connectÈ";
-                        }
+                        UpdatePLCUI(values);
 
                         for (var i = 0; i < _options.Value.CapteursIds.Length; i++)
                         {
@@ -176,6 +197,8 @@ public partial class Form1 : Form
                                 }
                             }
                         }
+
+                        toolStripStatusLabel5.Text = $"Last update: {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}";
                     });
 
                     await Task.Delay(TimeSpan.FromSeconds(_options.Value.PLCScanFrequencyInSeconds), token);
@@ -228,6 +251,23 @@ public partial class Form1 : Form
         }, token);
     }
 
+    private void UpdatePLCUI(byte[] values)
+    {
+        _logger.LogInformation("UpdatePLCUI with values {values}", values.Select(v => v.ToString()).Aggregate((a, b) => $"{a}, {b}"));
+
+        if (_client?.IsOpen == true && values != null)
+        {
+            label13.Text = values[0] == 1 ? "Ouverte" : "Ferm√©";
+            label14.Text = values[4] == 1 ? "Ouverte" : "Ferm√©";
+        }
+        else
+        {
+            label13.Text = "Non connect√©";
+            label14.Text = "Non connect√©";
+        }
+    }
+
+
     private string FormatLabelText(Capteur capteur)
     {
         var data = capteur.DonneesCapteur?.SingleOrDefault();
@@ -276,30 +316,6 @@ public partial class Form1 : Form
 
     public DateTime _lastSend;
 
-    private async ValueTask UpdateErabliereAPI(int[] values, CancellationToken token)
-    {
-        var options = _provider.GetRequiredService<IOptions<ErabliereApiOptionsWithSensors>>().Value;
-
-        if (options.SendIntervalInMinutes <= 0)
-        {
-            Invoke(() =>
-            {
-                toolStripStatusLabel5.Text = "ErabliereAPI: Disabled";
-            });
-        }
-        else if (DateTime.Now - _lastSend > TimeSpan.FromMinutes(options.SendIntervalInMinutes))
-        {
-            Invoke(() =>
-            {
-                toolStripStatusLabel5.Text = $"ErabliereAPI: Sending datas {DateTime.Now}";
-            });
-
-            await ErabliereApiTasks.Send24ValuesAsync(_provider, values, token);
-
-            _lastSend = DateTime.Now;
-        }
-    }
-
     private void ToolStripComboBox1_SelectedIndexChanged(object? sender, EventArgs e)
     {
         if (sender is ToolStripComboBox comboBox)
@@ -345,7 +361,11 @@ public partial class Form1 : Form
         {
             try
             {
-                _cst.Cancel();
+                if (!_cst.IsCancellationRequested)
+                {
+                    _logger.LogInformation("CancellationTokenSource.Cancel");
+                    _cst.Cancel();
+                }
                 _cst.Dispose();
                 if (_task != null)
                 {
@@ -356,6 +376,10 @@ public partial class Form1 : Form
 
                     try
                     {
+                        if (_task.Status == TaskStatus.WaitingForActivation)
+                        {
+                            _task.Start();
+                        }
                         _task.Dispose();
                     }
                     catch (Exception e)
@@ -376,13 +400,24 @@ public partial class Form1 : Form
 
         if (_client != null)
         {
-            _logger.LogInformation("Closing com port {portName}", _client.PortName);
-            _client.Close();
-            toolStripStatusLabel2.Text = $"State: Close";
-            toolStripStatusLabel3.Text = "";
-            toolStripStatusLabel4.Text = $"Enquery: n/a";
-            _logger.LogInformation("Disposing serial client");
-            _client.Dispose();
+            try
+            {
+                _logger.LogInformation("Closing com port {portName}", _client.PortName);
+                _client.Close();
+                toolStripStatusLabel2.Text = $"State: Close";
+                toolStripStatusLabel3.Text = "";
+                toolStripStatusLabel4.Text = $"Enquery: n/a";
+                _logger.LogInformation("Disposing serial client");
+                _client.Dispose();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Error when closing the serial client");
+            }
+            finally
+            {
+                _client = null;
+            }
         }
     }
 
@@ -393,38 +428,92 @@ public partial class Form1 : Form
         ChooseComPortAndLaunchTask();
     }
 
-    private void OuvrirValve1(object sender, EventArgs e)
+    private async void OuvrirValve1(object sender, EventArgs e)
     {
-        if (_client?.IsOpen == true)
+        try
         {
             if (_client?.IsOpen == true)
             {
-                _client.WriteAsync("V4000", new byte[] { 0b1 });
+                if (_client?.IsOpen == true)
+                {
+                    await _client.WriteAsync("V4000", [0b0, 0b1], token: _cst?.Token ?? default);
+
+                    var values = await _client.ReadAsync("V4000", readLength, token: _cst?.Token ?? default);
+
+                    Invoke(() =>
+                    {
+                        UpdatePLCUI(values);
+                    });
+                }
             }
         }
-    }
-
-    private void FermerVavle1(object sender, EventArgs e)
-    {
-        if (_client?.IsOpen == true)
+        catch (Exception ex)
         {
-            _client.WriteAsync("V4000", new byte[] { 0b0 });
+            _logger.LogError(ex, "Error when opening valve 1");
         }
     }
 
-    private void OuvrirValve2(object sender, EventArgs e)
+    private async void FermerVavle1(object sender, EventArgs e)
     {
-        if (_client?.IsOpen == true)
+        try
         {
-            _client.WriteAsync("V4002", new byte[] { 0b1 });
+            if (_client?.IsOpen == true)
+            {
+                await _client.WriteAsync("V4000", [0b0, 0b0], token: _cst?.Token ?? default);
+
+                var values = await _client.ReadAsync("V4000", readLength, token: _cst?.Token ?? default);
+
+                Invoke(() =>
+                {
+                    UpdatePLCUI(values);
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error when closing valve 1");
         }
     }
 
-    private void FermerValve2(object sender, EventArgs e)
+    private async void OuvrirValve2(object sender, EventArgs e)
     {
-        if (_client?.IsOpen == true)
+        try {
+            if (_client?.IsOpen == true)
+            {
+                await _client.WriteAsync("V4002",[0b0, 0b1], token: _cst?.Token ?? default);
+
+                var values = await _client.ReadAsync("V4000", readLength, token: _cst?.Token ?? default);
+
+                Invoke(() =>
+                {
+                    UpdatePLCUI(values);
+                });
+            }
+        }
+        catch (Exception ex)
         {
-            _client.WriteAsync("V4002", new byte[] { 0b0 });
+            _logger.LogError(ex, "Error when opening valve 2");
+        }
+    }
+
+    private async void FermerValve2(object sender, EventArgs e)
+    {
+        try {
+            if (_client?.IsOpen == true)
+            {
+                await _client.WriteAsync("V4002", [0b0, 0b0], token: _cst?.Token ?? default);
+
+                var values = await _client.ReadAsync("V4000", readLength, token: _cst?.Token ?? default);
+
+                Invoke(() =>
+                {
+                    UpdatePLCUI(values);
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error when closing valve 2");
         }
     }
 }

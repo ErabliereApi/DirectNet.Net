@@ -1,16 +1,9 @@
 using CustomLogic.Common;
-using ErabliereAPI.Proxy;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using Serilog;
-using System.Text.Json;
 
 namespace DirectNet.Net.Greenhouse.GUI;
 
 internal static class Program
 {
-    private static ErabliereApiOptionsWithSensors? _options;
-
     /// <summary>
     ///  The main entry point for the application.
     /// </summary>
