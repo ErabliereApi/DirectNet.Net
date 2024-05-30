@@ -121,6 +121,8 @@ public partial class Form1 : Form
                     }
 
                     var precipitations = await api.HourlyAsync(erabliere.Id.Value, "fr-CA", cancellationToken: token);
+                    
+                    var decisionContext = new DecisionContext();
 
                     Invoke(() =>
                     {
@@ -132,6 +134,7 @@ public partial class Form1 : Form
 
                         groupBox14.Text = "Précipitation 12h";
                         label12.Text = $"{precipitations.Sum(f => f.HasPrecipitation == true ? 1 : 0)} heures";
+                        decisionContext.PrecepitationNext12h = precipitations.Sum(f => f.HasPrecipitation == true ? 1 : 0);
 
                         button1.Text = "Ouvrir";
                         button2.Text = "Fermer";
@@ -151,46 +154,57 @@ public partial class Form1 : Form
                                     case 0:
                                         groupBox3.Text = capteur.Nom;
                                         label1.Text = FormatLabelText(capteur);
+                                        decisionContext.Temperature = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 1:
                                         groupBox4.Text = capteur.Nom;
                                         label2.Text = FormatLabelText(capteur);
+                                        decisionContext.Humidity = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 2:
                                         groupBox5.Text = capteur.Nom;
                                         label3.Text = FormatLabelText(capteur);
+                                        decisionContext.PressionAtmopherique = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 3:
                                         groupBox6.Text = capteur.Nom;
                                         label4.Text = FormatLabelText(capteur);
+                                        decisionContext.DewPoint = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 4:
                                         groupBox7.Text = capteur.Nom;
                                         label5.Text = FormatLabelText(capteur);
+                                        decisionContext.WindDirection = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 5:
                                         groupBox8.Text = capteur.Nom;
                                         label6.Text = FormatLabelText(capteur);
+                                        decisionContext.WindSpeed = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 6:
                                         groupBox9.Text = capteur.Nom;
                                         label7.Text = FormatLabelText(capteur);
+                                        decisionContext.Precipitations = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 7:
                                         groupBox10.Text = capteur.Nom;
                                         label8.Text = FormatLabelText(capteur);
+                                        decisionContext.RadiationSolair = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 8:
                                         groupBox11.Text = capteur.Nom;
                                         label9.Text = FormatLabelText(capteur);
+                                        decisionContext.HumiditeSolArriere = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 9:
                                         groupBox12.Text = capteur.Nom;
                                         label10.Text = FormatLabelText(capteur);
+                                        decisionContext.HumiditeSolSerre = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     case 10:
                                         groupBox13.Text = capteur.Nom;
                                         label11.Text = FormatLabelText(capteur);
+                                        decisionContext.TemperatureSerre = capteur.DonneesCapteur?.FirstOrDefault()?.Valeur;
                                         break;
                                     default:
                                         break;
@@ -198,8 +212,24 @@ public partial class Form1 : Form
                             }
                         }
 
-                        toolStripStatusLabel5.Text = $"Last update: {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}";
+                        toolStripStatusLabel5.Text = $"Last update: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}";
                     });
+
+                    if (decisionContext.HumiditeSolSerre < 450) {
+                        await _client.WriteAsync("V4000", [0b0, 0b1], token: _cst?.Token ?? default);
+                    } else {
+                        await _client.WriteAsync("V4000", [0b0, 0b0], token: _cst?.Token ?? default);
+                    }
+
+                    if (decisionContext.HumiditeSolArriere < 450) {
+                        await _client.WriteAsync("V4002", [0b0, 0b1], token: _cst?.Token ?? default);
+                    } else {
+                        await _client.WriteAsync("V4002", [0b0, 0b0], token: _cst?.Token ?? default);
+                    }
+
+                    values = await _client.ReadAsync("V4000", readLength, token: token);
+
+                    UpdatePLCUI(values);
 
                     await Task.Delay(TimeSpan.FromSeconds(_options.Value.PLCScanFrequencyInSeconds), token);
 
@@ -516,4 +546,24 @@ public partial class Form1 : Form
             _logger.LogError(ex, "Error when closing valve 2");
         }
     }
+}
+
+internal class DecisionContext
+{
+    public DecisionContext()
+    {
+    }
+
+    public int? Temperature { get; internal set; }
+    public int? Humidity { get; internal set; }
+    public int? PressionAtmopherique { get; internal set; }
+    public int? DewPoint { get; internal set; }
+    public int? WindDirection { get; internal set; }
+    public int? WindSpeed { get; internal set; }
+    public int? Precipitations { get; internal set; }
+    public int? RadiationSolair { get; internal set; }
+    public int? HumiditeSolArriere { get; internal set; }
+    public int? HumiditeSolSerre { get; internal set; }
+    public int? TemperatureSerre { get; internal set; }
+    public int PrecepitationNext12h { get; internal set; }
 }
