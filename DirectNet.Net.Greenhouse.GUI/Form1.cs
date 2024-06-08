@@ -215,13 +215,13 @@ public partial class Form1 : Form
                         toolStripStatusLabel5.Text = $"Last update: {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}";
                     });
 
-                    if (decisionContext.HumiditeSolSerre < 450) {
+                    if (decisionContext.HumiditeSolSerre < 300 && decisionContext.PrecepitationNext12h > 9) {
                         await _client.WriteAsync("V4000", [0b0, 0b1], token: _cst?.Token ?? default);
                     } else {
                         await _client.WriteAsync("V4000", [0b0, 0b0], token: _cst?.Token ?? default);
                     }
 
-                    if (decisionContext.HumiditeSolArriere < 450) {
+                    if (decisionContext.HumiditeSolArriere < 300 && decisionContext.PrecepitationNext12h > 5) {
                         await _client.WriteAsync("V4002", [0b0, 0b1], token: _cst?.Token ?? default);
                     } else {
                         await _client.WriteAsync("V4002", [0b0, 0b0], token: _cst?.Token ?? default);
